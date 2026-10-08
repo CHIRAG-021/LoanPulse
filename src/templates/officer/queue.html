@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Officer Application Queue{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>Loan Officer Application Queue</h1>
+            <div class="muted">Review submitted loan applications and run rule-based assessment.</div>
+        </div>
+        <span class="tag">US-04 · BR-04</span>
+    </div>
+
+    <div class="box">
+        <h2>Applications Available for Review</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Application ID</th>
+                    <th>Applicant Name</th>
+                    <th>Monthly Income</th>
+                    <th>Requested Amount</th>
+                    <th>Term</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                    <tr>
+                        <td><b>{{ app.application_id }}</b></td>
+                        <td>{{ app.applicant_name }}</td>
+                        <td>₹{{ '{:,.2f}'.format(app.monthly_income) }}</td>
+                        <td>₹{{ '{:,.2f}'.format(app.requested_amount) }}</td>
+                        <td>{{ app.term_months }}m</td>
+                        <td><span class="status status-{{ app.status }}">{{ app.status }}</span></td>
+                        <td>
+                            <a href="{{ url_for('officer.review_application', application_id=app.application_id) }}" class="btn">Open Review</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

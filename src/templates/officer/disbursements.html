@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Disbursement Tracking{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>6. Disbursement Update</h1>
+            <div class="muted">Record whether an approved loan has been disbursed and the disbursement date.</div>
+        </div>
+        <span class="tag">US-06 · BR-06</span>
+    </div>
+
+    <div class="box">
+        <h2>Record Loan Disbursement</h2>
+        <form method="POST" id="disbursement-form" onsubmit="event.preventDefault(); submitDisbursement();">
+            <div class="grid">
+                <div>
+                    <label for="selectAppId">Approved Application *</label>
+                    <select id="selectAppId" onchange="updateApprovedAmount(this)">
+                        <option value="">-- Select an approved application --</option>
+                        {% for app in applications %}
+                            <option value="{{ app.application_id }}" data-amount="{{ app.approved_amount or app.requested_amount }}" data-status="{{ app.disbursement_status }}">
+                                {{ app.application_id }} — {{ app.applicant_name }} (₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }} - {{ app.disbursement_status }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="approvedAmount">Approved amount (₹)</label>
+                    <input id="approvedAmount" readonly value="—" style="background: #e9e9e9;">
+                </div>
+                <div>
+                    <label for="disbStatus">Disbursement status</label>
+                    <input id="disbStatus" readonly value="DISBURSED" style="background: #e9e9e9; font-weight: bold;">
+                </div>
+                <div>
+                    <label for="disbDate">Disbursement date *</label>
+                    <input type="date" id="disbDate" name="disbursement_date" value="{{ today or '2026-10-08' }}" required>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn primary" onclick="submitDisbursement()">Record Disbursement</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="box" style="margin-top: 14px;">
+        <h2>Approved Loans List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Application</th>
+                    <th>Applicant</th>
+                    <th>Approved Amount</th>
+                    <th>Disbursement Status</th>
+                    <th>Disbursement Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="disbRows">
+                {% for app in applications %}
+                    <tr>
+                        <td><b>{{ app.application_id }}</b></td>
+                        <td>{{ app.applicant_name }}</td>
+                        <td>₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }}</td>
+                        <td>
+                            <span class="status {% if app.disbursement_status == 'DISBURSED' %}status-APPROVED{% else %}status-DRAFT{% endif %}">
+                                {{ app.disbursement_status }}
+                            </span>
+                        </td>
+                        <td>{{ app.disbursement_date or '—' }}</td>
+                        <td>
+                            {% if app.disbursement_status != 'DISBURSED' %}
+                                <form method="POST" action="{{ url_for('officer.disburse_loan', application_id=app.application_id) }}" style="display: inline;">
+                                    <input type="hidden" name="disbursement_date" value="{{ today or '2026-10-08' }}">
+                                    <button type="submit" class="btn success" style="padding: 4px 8px; font-size: 12px;">Disburse Now</button>
+                                </form>
+                            {% else %}
+                                <span class="muted">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+function updateApprovedAmount(select) {
+    const opt = select.options[select.selectedIndex];
+    if (opt && opt.dataset.amount) {
+        document.getElementById('approvedAmount').value = '₹' + Number(opt.dataset.amount).toLocaleString('en-IN', {minimumFractionDigits: 2});
+    } else {
+        document.getElementById('approvedAmount').value = '—';
+    }
+}
+
+function submitDisbursement() {
+    const appId = document.getElementById('selectAppId').value;
+    const dateVal = document.getElementById('disbDate').value;
+    if (!appId) {
+        alert('Please select an application to disburse.');
+        return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/officer/applications/' + appId + '/disburse';
+    const dateInput = document.createElement('input');
+    dateInput.type = 'hidden';
+    dateInput.name = 'disbursement_date';
+    dateInput.value = dateVal;
+    form.appendChild(dateInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Review Application {{ app.application_id }}{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>4. Application Review: {{ app.application_id }}</h1>
+            <div class="muted">Review relevant applicant, loan, and assessment information.</div>
+        </div>
+        <span class="tag">US-04 · BR-04</span>
+    </div>
+
+    <div class="grid">
+        <div class="box">
+            <h2>Applicant Details</h2>
+            <label>Application ID</label>
+            <input value="{{ app.application_id }}" readonly>
+
+            <label style="margin-top: 10px;">Applicant Name</label>
+            <input value="{{ app.applicant_name }}" readonly>
+
+            <label style="margin-top: 10px;">Customer ID</label>
+            <input value="{{ app.customer_id }}" readonly>
+        </div>
+
+        <div class="box">
+            <h2>Loan Details</h2>
+            <label>Monthly Income</label>
+            <input value="₹{{ '{:,.2f}'.format(app.monthly_income) }}" readonly>
+
+            <label style="margin-top: 10px;">Requested Loan Amount</label>
+            <input value="₹{{ '{:,.2f}'.format(app.requested_amount) }}" readonly>
+
+            <label style="margin-top: 10px;">Loan Term</label>
+            <input value="{{ app.term_months }} months" readonly>
+
+            <label style="margin-top: 10px;">Current Status</label>
+            <input value="{{ app.status }}" readonly style="font-weight: bold;">
+        </div>
+    </div>
+
+    <div class="box">
+        <h2>Active Rule Configuration</h2>
+        {% if active_rule %}
+            <div class="grid3">
+                <div class="stat">
+                    Rule Name
+                    <b>{{ active_rule.rule_name }}</b>
+                </div>
+                <div class="stat">
+                    Min Monthly Income
+                    <b>₹{{ '{:,.2f}'.format(active_rule.min_monthly_income) }}</b>
+                </div>
+                <div class="stat">
+                    Max Loan-to-Income Ratio
+                    <b>{{ '{:.2f}'.format(active_rule.max_loan_to_income_ratio) }}</b>
+                </div>
+            </div>
+        {% else %}
+            <p class="muted">Standard rule criteria apply.</p>
+        {% endif %}
+    </div>
+
+    {% if assessments %}
+        <div class="box">
+            <h2>Assessment History</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Assessment ID</th>
+                        <th>Assessed Date</th>
+                        <th>Calculated Ratio</th>
+                        <th>Assessment Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assessments %}
+                        <tr>
+                            <td>#{{ a.assessment_id }}</td>
+                            <td>{{ a.assessed_at }}</td>
+                            <td>{{ '{:.2f}'.format(a.calculated_ratio) }}</td>
+                            <td>
+                                <span class="status {% if a.assessment_result == 'ELIGIBLE' %}status-APPROVED{% else %}status-REJECTED{% endif %}">
+                                    {{ a.assessment_result }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="box">
+            <h2>Assessment Status</h2>
+            <div class="placeholder">
+                No rule-based assessment has been run yet for this application.
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="actions">
+        <form method="POST" action="{{ url_for('officer.run_assessment_route', application_id=app.application_id) }}" style="display: inline;">
+            <button type="submit" class="btn primary">Run Rule Assessment</button>
+        </form>
+
+        {% if app.status != 'PENDING_MANAGER_REVIEW' and app.status != 'APPROVED' and app.status != 'REJECTED' %}
+            <form method="POST" action="{{ url_for('officer.send_to_manager', application_id=app.application_id) }}" style="display: inline;">
+                <button type="submit" class="btn success">Send to Manager Decision</button>
+            </form>
+        {% endif %}
+
+        {% if app.status == 'APPROVED' and app.disbursement_status != 'DISBURSED' %}
+            <form method="POST" action="{{ url_for('officer.disburse_loan', application_id=app.application_id) }}" style="display: inline;">
+                <button type="submit" class="btn success">Record Disbursement</button>
+            </form>
+        {% endif %}
+
+        <a href="{{ url_for('officer.queue') }}" class="btn">Back to Queue</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,2 @@
+user_id_label,role,resource,expected_access
+USER-CUST-01,CUSTOMER,STAFF_REPORT,DENY

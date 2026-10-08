@@ -1,0 +1,13 @@
+user_id,full_name,email,role,is_active
+1,Test Borrower 01,borrower01@example.test,CUSTOMER,True
+2,Test Borrower 02,borrower02@example.test,CUSTOMER,True
+3,Test Borrower 03,borrower03@example.test,CUSTOMER,True
+4,Test Borrower 04,borrower04@example.test,CUSTOMER,True
+5,Test Borrower 05,borrower05@example.test,CUSTOMER,True
+6,Test Borrower 06,borrower06@example.test,CUSTOMER,True
+7,Test Officer 01,officer01@example.test,LOAN_OFFICER,True
+8,Test Officer 02,officer02@example.test,LOAN_OFFICER,True
+9,Test Officer 03,officer03@example.test,LOAN_OFFICER,True
+10,Test Officer 04,officer04@example.test,LOAN_OFFICER,True
+11,Test Manager 01,manager01@example.test,LOAN_MANAGER,True
+12,Test Manager 02,manager02@example.test,LOAN_MANAGER,True

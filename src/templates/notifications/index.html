@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Notifications & Updates{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>7. Notifications / Updates</h1>
+            <div class="muted">Important loan-status changes and lifecycle updates.</div>
+        </div>
+        <span class="tag">US-07 · BR-07</span>
+    </div>
+
+    <div class="grid3">
+        <div class="stat">
+            Unread updates
+            <b id="unreadCount">{{ unread_count }}</b>
+        </div>
+        <div class="stat">
+            Total updates
+            <b>{{ notifications|length }}</b>
+        </div>
+        <div class="stat">
+            Role
+            <b>{{ current_user.role }}</b>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 14px;">
+        <h2>Status Updates History</h2>
+
+        {% if notifications %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Application</th>
+                        <th>Old Status</th>
+                        <th>New Status</th>
+                        <th>Message</th>
+                        <th>Read</th>
+                    </tr>
+                </thead>
+                <tbody id="notificationRows">
+                    {% for n in notifications %}
+                        <tr {% if not n.is_read %}style="background: #fdfbf7; font-weight: 500;"{% endif %}>
+                            <td>{{ n.created_at }}</td>
+                            <td>
+                                {% if current_user.role == 'CUSTOMER' %}
+                                    <a href="{{ url_for('customer.application_status', application_id=n.application_id) }}"><b>{{ n.application_id }}</b></a>
+                                {% else %}
+                                    <a href="{{ url_for('officer.review_application', application_id=n.application_id) }}"><b>{{ n.application_id }}</b></a>
+                                {% endif %}
+                            </td>
+                            <td>{{ n.old_status or '—' }}</td>
+                            <td><span class="status status-{{ n.new_status }}">{{ n.new_status }}</span></td>
+                            <td>{{ n.message }}</td>
+                            <td>{{ 'Yes' if n.is_read else 'No' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="placeholder">
+                No notifications or status updates found.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="actions">
+        <form method="POST" action="{{ url_for('notifications.mark_read') }}" style="display: inline;">
+            <button type="submit" class="btn primary">Mark Visible Updates as Read</button>
+        </form>
+        {% if current_user.role == 'CUSTOMER' %}
+            <a href="{{ url_for('customer.dashboard') }}" class="btn">Back to Dashboard</a>
+        {% elif current_user.role == 'LOAN_OFFICER' %}
+            <a href="{{ url_for('officer.queue') }}" class="btn">Back to Review Queue</a>
+        {% else %}
+            <a href="{{ url_for('manager.queue') }}" class="btn">Back to Manager Queue</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

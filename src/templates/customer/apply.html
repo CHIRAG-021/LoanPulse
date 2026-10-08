@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — New Loan Application{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>1. Loan Application</h1>
+            <div class="muted">Customer creates and saves a loan application.</div>
+        </div>
+        <span class="tag">US-01 · BR-01</span>
+    </div>
+
+    <div class="steps">
+        <span class="step current">1 Application</span>
+        <span class="step">2 Assessment</span>
+        <span class="step">3 Review</span>
+        <span class="step">4 Decision</span>
+    </div>
+
+    <div class="box">
+        <h2>Application Information</h2>
+        <form method="POST" action="{{ url_for('customer.new_application') }}" id="application-form">
+            <div class="grid">
+                <div>
+                    <label for="applicant_name">Applicant name *</label>
+                    <input id="applicant_name" name="applicant_name" value="{{ form_data.get('applicant_name', '') }}" required>
+                    {% if 'applicant_name' in errors %}
+                        <div class="field-error">{{ errors['applicant_name'] }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label>Customer ID</label>
+                    <input value="{{ current_user.user_id }} ({{ current_user.full_name }})" readonly style="background: #e9e9e9;">
+                </div>
+
+                <div>
+                    <label for="monthly_income">Monthly income (₹) *</label>
+                    <input id="monthly_income" name="monthly_income" value="{{ form_data.get('monthly_income', '') }}" required>
+                    {% if 'monthly_income' in errors %}
+                        <div class="field-error">{{ errors['monthly_income'] }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="requested_amount">Requested loan amount (₹) *</label>
+                    <input id="requested_amount" name="requested_amount" value="{{ form_data.get('requested_amount', form_data.get('loan_amount', '')) }}" required>
+                    {% if 'requested_amount' in errors or 'loan_amount' in errors %}
+                        <div class="field-error">{{ errors.get('requested_amount') or errors.get('loan_amount') }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="term_months">Loan term (months) *</label>
+                    <select id="term_months" name="term_months">
+                        {% for t in [12, 18, 24, 36, 48, 60] %}
+                            <option value="{{ t }}" {% if form_data.get('term_months')|string == t|string %}selected{% endif %}>{{ t }} months</option>
+                        {% endfor %}
+                    </select>
+                    {% if 'term_months' in errors %}
+                        <div class="field-error">{{ errors['term_months'] }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="purpose">Loan purpose</label>
+                    <input id="purpose" name="purpose" value="{{ form_data.get('purpose', 'Education') }}">
+                </div>
+            </div>
+
+            <div class="note">Required application fields are marked *. Synthetic demonstration data only.</div>
+
+            <div class="actions">
+                <button type="submit" class="btn primary">Save & Submit Application</button>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

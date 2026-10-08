@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — My Applications{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>My Loan Applications</h1>
+            <div class="muted">Track the status of all your submitted loan applications.</div>
+        </div>
+        <a href="{{ url_for('customer.new_application') }}" class="btn primary">+ New Application</a>
+    </div>
+
+    {% if applications %}
+        <div class="box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Applicant Name</th>
+                        <th>Requested Amount</th>
+                        <th>Term</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                        <tr>
+                            <td><b>{{ app.application_id }}</b></td>
+                            <td>{{ app.applicant_name }}</td>
+                            <td>₹{{ '{:,.2f}'.format(app.requested_amount) }}</td>
+                            <td>{{ app.term_months }}m</td>
+                            <td><span class="status status-{{ app.status }}">{{ app.status }}</span></td>
+                            <td>{{ app.created_at }}</td>
+                            <td>
+                                <a href="{{ url_for('customer.application_status', application_id=app.application_id) }}" class="btn">View Status</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="placeholder">
+            <p>You have not submitted any loan applications yet.</p>
+            <div style="margin-top: 10px;">
+                <a href="{{ url_for('customer.new_application') }}" class="btn primary">Start Your First Application</a>
+            </div>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

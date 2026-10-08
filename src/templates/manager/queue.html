@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Manager Decision Queue{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>5. Pending Decision Report</h1>
+            <div class="muted">Loan manager reviews applications that require a decision.</div>
+        </div>
+        <span class="tag">US-05 · BR-05</span>
+    </div>
+
+    <div class="grid3">
+        <div class="stat">
+            Pending manager decisions
+            <b id="pendingCount">{{ pending_count }}</b>
+        </div>
+        <div class="stat">
+            Approved loans
+            <b>{{ approved_count }}</b>
+        </div>
+        <div class="stat">
+            Rejected loans
+            <b>{{ rejected_count }}</b>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 14px;">
+        <h2>Applications Requiring Decision</h2>
+
+        {% if applications %}
+            <table id="pending-applications-table">
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Applicant</th>
+                        <th>Monthly Income</th>
+                        <th>Requested Amount</th>
+                        <th>Term</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="managerRows">
+                    {% for app in applications %}
+                        <tr>
+                            <td><b>{{ app.application_id }}</b></td>
+                            <td>{{ app.applicant_name }}</td>
+                            <td>₹{{ '{:,.2f}'.format(app.monthly_income) }}</td>
+                            <td>₹{{ '{:,.2f}'.format(app.requested_amount) }}</td>
+                            <td>{{ app.term_months }}m</td>
+                            <td><span class="status status-{{ app.status }}">{{ app.status }}</span></td>
+                            <td>
+                                <div style="display: flex; gap: 6px;">
+                                    <form method="POST" action="{{ url_for('manager.record_decision', application_id=app.application_id) }}" style="display: inline;">
+                                        <input type="hidden" name="decision" value="APPROVE">
+                                        <button type="submit" class="btn success" style="padding: 4px 8px; font-size: 12px;">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('manager.record_decision', application_id=app.application_id) }}" style="display: inline;">
+                                        <input type="hidden" name="decision" value="REJECT">
+                                        <button type="submit" class="btn danger" style="padding: 4px 8px; font-size: 12px;">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <!-- TC-11 requirement: empty-state message and no application rows -->
+            <div id="empty-state-message" class="placeholder">
+                <p>No applications currently require a manager decision.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

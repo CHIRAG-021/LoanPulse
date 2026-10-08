@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LoanPulse: LoanMaster{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="topbar">
+        <a href="{{ url_for('auth.index') }}" class="brand">LoanPulse: LoanMaster</a>
+        
+        {% if current_user.is_authenticated %}
+            {% if current_user.role == 'CUSTOMER' %}
+                <a href="{{ url_for('customer.dashboard') }}" class="nav {% if request.endpoint == 'customer.dashboard' %}active{% endif %}">My Applications</a>
+                <a href="{{ url_for('customer.new_application') }}" class="nav {% if request.endpoint == 'customer.new_application' %}active{% endif %}">Apply</a>
+            {% elif current_user.role == 'LOAN_OFFICER' %}
+                <a href="{{ url_for('officer.queue') }}" class="nav {% if request.endpoint in ['officer.queue', 'officer.review_application'] %}active{% endif %}">Review Queue</a>
+                <a href="{{ url_for('officer.disbursements_view') }}" class="nav {% if request.endpoint == 'officer.disbursements_view' %}active{% endif %}">Disbursements</a>
+            {% elif current_user.role == 'LOAN_MANAGER' %}
+                <a href="{{ url_for('manager.queue') }}" class="nav {% if request.endpoint in ['manager.queue', 'manager.review_application'] %}active{% endif %}">Pending Decisions</a>
+            {% endif %}
+
+            <a href="{{ url_for('notifications.list_notifications') }}" class="nav {% if request.endpoint == 'notifications.list_notifications' %}active{% endif %}">Notifications</a>
+            
+            <span class="role-badge">
+                <span>User: <b>{{ current_user.full_name }}</b> ({{ current_user.role }})</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn" style="padding: 4px 8px; font-size: 11px;">Logout</a>
+            </span>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav">Login</a>
+            <span class="role-badge">Guest</span>
+        {% endif %}
+    </nav>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

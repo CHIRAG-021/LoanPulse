@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Application Status: {{ app.application_id }}{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>2. Application Status</h1>
+            <div class="muted">Customer can see the current status of the submitted application.</div>
+        </div>
+        <span class="tag">US-02 · BR-02</span>
+    </div>
+
+    <div class="grid4">
+        <div class="stat">
+            Application ID
+            <b id="statusAppId">{{ app.application_id }}</b>
+        </div>
+        <div class="stat">
+            Current status
+            <b id="statusValue" class="status status-{{ app.status }}" style="font-size: 18px; margin-top: 5px;">{{ app.status }}</b>
+        </div>
+        <div class="stat">
+            Last updated
+            <b id="statusDate">{{ app.updated_at.isoformat() if app.updated_at else '—' }}</b>
+        </div>
+        <div class="stat">
+            Requested amount
+            <b id="statusAmount">₹{{ '{:,.2f}'.format(app.requested_amount) }}</b>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 14px;">
+        <h2>Application Details</h2>
+        <div class="grid">
+            <div>
+                <p><b>Applicant name:</b> {{ app.applicant_name }}</p>
+                <p><b>Monthly income:</b> ₹{{ '{:,.2f}'.format(app.monthly_income) }}</p>
+            </div>
+            <div>
+                <p><b>Requested term:</b> {{ app.term_months }} months</p>
+                <p><b>Created date:</b> {{ app.created_at.isoformat() if app.created_at else '—' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 14px;">
+        <h2>Application Status Timeline</h2>
+        <div id="timeline" class="timeline">
+            <div>Application recorded → <b>DRAFT</b> ({{ app.created_at }})</div>
+            {% if app.status != 'DRAFT' %}
+                <div>Application submitted for processing → <b>{{ app.status }}</b> ({{ app.updated_at }})</div>
+            {% endif %}
+            {% if app.status == 'APPROVED' %}
+                <div>Final Decision → <b>APPROVED</b> (Approved Amount: ₹{{ '{:,.2f}'.format(app.approved_amount) if app.approved_amount else '—' }})</div>
+            {% elif app.status == 'REJECTED' %}
+                <div>Final Decision → <b>REJECTED</b></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="actions">
+        <a href="{{ url_for('customer.new_application') }}" class="btn">New Application</a>
+        <a href="{{ url_for('customer.dashboard') }}" class="btn primary">Back to My Applications</a>
+    </div>
+</section>
+{% endblock %}
