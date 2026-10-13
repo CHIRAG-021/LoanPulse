@@ -58,6 +58,17 @@ def seed_database(app=None, data_dir: Path | None = None) -> dict[str, int]:
 
         counts = {}
 
+        # If already seeded, return existing counts to prevent duplicate key errors
+        if User.query.first() is not None:
+            counts["users"] = User.query.count()
+            counts["loan_applications"] = LoanApplication.query.count()
+            counts["assessment_rules"] = AssessmentRule.query.count()
+            counts["assessments"] = Assessment.query.count()
+            counts["notifications"] = Notification.query.count()
+            counts["role_permissions"] = RolePermission.query.count()
+            counts["loan_products"] = LoanProduct.query.count()
+            return counts
+
         # 1. Users
         users_file = data_path / "users.csv"
         user_rows = []
