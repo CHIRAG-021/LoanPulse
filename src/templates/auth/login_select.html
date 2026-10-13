@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Sign In{% endblock %}
+{% block meta_description %}Choose your LoanPulse login portal to access either customer loan services or internal administrative credit management.{% endblock %}
+
+{% block content %}
+<div class="role-select-container" style="max-width: 860px; margin: 40px auto;">
+    <div style="text-align: center; margin-bottom: 32px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #6366f1); color: white; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+        </div>
+        <h1 style="font-size: 30px; font-weight: 800; color: #ffffff; margin: 0 0 8px; letter-spacing: -0.025em;">Sign In to LoanPulse</h1>
+        <p class="muted" style="max-width: 500px; margin: 0 auto; font-size: 14.5px;">
+            Choose User or Administration Login to access your designated workspace.
+        </p>
+    </div>
+
+    <div class="grid" style="gap: 24px; max-width: 800px; margin: 0 auto;">
+        <!-- Card 1: User -->
+        <div class="box" style="padding: 32px 28px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; border-color: var(--border-color); transition: border-color 0.2s ease, transform 0.2s ease;">
+            <div>
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.15); color: #60a5fa; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 8px;">User</h2>
+                <p class="muted" style="margin: 0 0 24px; font-size: 14px; line-height: 1.55;">
+                    For customers who want to apply for and track loans.
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('auth.login_user_view') }}" class="btn primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px; font-weight: 700;">
+                    <span>Continue as User</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <div style="margin-top: 14px; text-align: center;">
+                    <span class="muted" style="font-size: 12.5px;">Don't have an account? </span>
+                    <a href="{{ url_for('auth.signup') }}" style="font-size: 12.5px; font-weight: 600;">Sign up</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Administration -->
+        <div class="box" style="padding: 32px 28px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between; border-color: var(--border-color); transition: border-color 0.2s ease, transform 0.2s ease;">
+            <div>
+                <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: rgba(168, 85, 247, 0.15); color: #c084fc; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; border: 1px solid rgba(168, 85, 247, 0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin: 0 0 8px;">Administration</h2>
+                <p class="muted" style="margin: 0 0 24px; font-size: 14px; line-height: 1.55;">
+                    For authorized Loan Officers and Loan Managers.
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('auth.login_admin_view') }}" class="btn" style="width: 100%; justify-content: center; padding: 12px; font-size: 14px; font-weight: 700; background: var(--bg-elevated); border-color: var(--border-strong);">
+                    <span>Continue to Administration</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <div style="margin-top: 14px; text-align: center;">
+                    <span class="muted" style="font-size: 12.5px;">Staff access only</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

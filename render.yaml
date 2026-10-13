@@ -1,0 +1,34 @@
+# ==============================================================================
+# Render Blueprint Specification for LoanPulse
+# ==============================================================================
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+services:
+  - type: web
+    name: loanpulse-web
+    runtime: python
+    plan: starter # $7/month for continuous uptime without cold starts; or 'free'
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn --config gunicorn.conf.py wsgi:app"
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true # Render automatically generates a cryptographically secure random string
+      - key: DATABASE_URL
+        fromDatabase:
+          name: loanpulse-db
+          property: connectionString
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: BEHIND_PROXY
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "2"
+
+databases:
+  - name: loanpulse-db
+    plan: starter # $7/month for persistent managed database; or 'free' (30-day trial)
+    databaseName: loanpulse_prod
+    user: loanpulse_user

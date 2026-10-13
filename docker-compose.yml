@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: loanpulse_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-loanpulse_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_postgres_password}
+      POSTGRES_DB: ${POSTGRES_DB:-loanpulse_prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-loanpulse_user} -d ${POSTGRES_DB:-loanpulse_prod}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: loanpulse_web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY environment variable must be explicitly configured}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-loanpulse_user}:${POSTGRES_PASSWORD:-change_this_postgres_password}@db:5432/${POSTGRES_DB:-loanpulse_prod}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
+      BEHIND_PROXY: ${BEHIND_PROXY:-True}
+      PORT: 8000
+    volumes:
+      - uploads_data:/app/uploads/documents
+
+volumes:
+  postgres_data:
+  uploads_data:

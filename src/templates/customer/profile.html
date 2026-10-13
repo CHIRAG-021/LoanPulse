@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Customer Profile{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 960px; margin: 0 auto;">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Customer Profile</span>
+            </h1>
+            <div class="muted">Manage your personal and employment details to ensure swift loan underwriting.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh customer profile">
+                <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+            </button>
+            <a href="{{ url_for('customer.kyc') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>KYC & Verification →</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Profile Completion Status Banner -->
+    <div class="box" style="margin-bottom: 24px; padding: 20px 24px; background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+                <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Profile Completeness</span>
+                <div style="font-size: 15px; font-weight: 600; color: #ffffff; margin-top: 2px;">
+                    {% if completion_pct == 100 %}
+                        Your profile is 100% complete!
+                    {% else %}
+                        Your profile is {{ completion_pct }}% complete
+                    {% endif %}
+                </div>
+            </div>
+            <span class="tag" style="font-size: 14px; font-weight: 700; font-family: var(--font-mono); color: {% if completion_pct >= 80 %}#34d399{% elif completion_pct >= 50 %}#fbbf24{% else %}#60a5fa{% endif %};">
+                {{ completion_pct }}%
+            </span>
+        </div>
+        <div style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden;">
+            <div style="width: {{ completion_pct }}%; height: 100%; background: {% if completion_pct >= 80 %}#10b981{% elif completion_pct >= 50 %}#f59e0b{% else %}#3b82f6{% endif %}; border-radius: 999px; transition: width 0.4s ease;"></div>
+        </div>
+    </div>
+
+    <div class="box" style="padding: 28px;">
+        <h2>Personal & Employment Information</h2>
+        <p class="muted" style="margin-bottom: 22px;">Updating these details automatically pre-populates your future loan applications.</p>
+
+        <form method="POST" action="{{ url_for('customer.profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid" style="gap: 20px;">
+                <!-- Full Name (Account) -->
+                <div>
+                    <label>Full Legal Name</label>
+                    <input value="{{ current_user.full_name }}" readonly style="background: var(--bg-muted); color: var(--text-muted); cursor: not-allowed;">
+                    <span class="muted" style="font-size: 11px;">Primary identity registered to account.</span>
+                </div>
+
+                <!-- Email (Account) -->
+                <div>
+                    <label>Email Address</label>
+                    <input value="{{ current_user.email }}" readonly style="background: var(--bg-muted); color: var(--text-muted); cursor: not-allowed;">
+                    <span class="muted" style="font-size: 11px;">Registered authentication email.</span>
+                </div>
+
+                <!-- Phone Number -->
+                <div>
+                    <label for="phone_number">Phone Number</label>
+                    <input id="phone_number" name="phone_number" value="{{ form_data.get('phone_number', '') }}" placeholder="e.g. +91 98765 43210">
+                    {% if 'phone_number' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['phone_number'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Date of Birth -->
+                <div>
+                    <label for="date_of_birth">Date of Birth</label>
+                    <input id="date_of_birth" name="date_of_birth" type="date" value="{{ form_data.get('date_of_birth', '') }}">
+                    {% if 'date_of_birth' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['date_of_birth'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Address -->
+                <div style="grid-column: span 2;">
+                    <label for="address">Residential Address</label>
+                    <input id="address" name="address" value="{{ form_data.get('address', '') }}" placeholder="e.g. 123 Tech Park Residency, Flat 4B">
+                    {% if 'address' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['address'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- City -->
+                <div>
+                    <label for="city">City</label>
+                    <input id="city" name="city" value="{{ form_data.get('city', '') }}" placeholder="e.g. Mumbai, Bengaluru">
+                    {% if 'city' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['city'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- State -->
+                <div>
+                    <label for="state">State / Province</label>
+                    <input id="state" name="state" value="{{ form_data.get('state', '') }}" placeholder="e.g. Maharashtra, Karnataka">
+                    {% if 'state' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['state'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Employment Type -->
+                <div>
+                    <label for="employment_type">Employment Classification</label>
+                    <select id="employment_type" name="employment_type">
+                        {% set curr_emp = form_data.get('employment_type', '') %}
+                        <option value="" {% if not curr_emp %}selected{% endif %}>Select Employment Type</option>
+                        <option value="SALARIED" {% if curr_emp == 'SALARIED' %}selected{% endif %}>Salaried Employee</option>
+                        <option value="SELF_EMPLOYED" {% if curr_emp == 'SELF_EMPLOYED' %}selected{% endif %}>Self-Employed / Consultant</option>
+                        <option value="BUSINESS_OWNER" {% if curr_emp == 'BUSINESS_OWNER' %}selected{% endif %}>Business Owner</option>
+                        <option value="OTHER" {% if curr_emp == 'OTHER' %}selected{% endif %}>Other</option>
+                    </select>
+                    {% if 'employment_type' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['employment_type'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Employer Name -->
+                <div>
+                    <label for="employer_name">Employer or Organization Name</label>
+                    <input id="employer_name" name="employer_name" value="{{ form_data.get('employer_name', '') }}" placeholder="e.g. Infosys, TCS, Startup LLC">
+                    {% if 'employer_name' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['employer_name'] }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Monthly Income -->
+                <div>
+                    <label for="monthly_income">Monthly Gross Income (₹)</label>
+                    <input id="monthly_income" name="monthly_income" type="number" step="any" value="{{ form_data.get('monthly_income', '') }}" placeholder="e.g. 75000">
+                    {% if 'monthly_income' in errors %}
+                        <div class="field-error">
+                            <span>{{ errors['monthly_income'] }}</span>
+                        </div>
+                    {% else %}
+                        <div class="muted" style="font-size: 11.5px; margin-top: 4px;">Verified regular monthly income before deductions.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top: 26px; display: flex; gap: 12px;">
+                <button type="submit" class="btn primary" style="padding: 10px 24px; font-weight: 700;">
+                    <span>Save Profile Changes</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn" style="padding: 10px 18px;">Back to Dashboard</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

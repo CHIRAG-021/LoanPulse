@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Loan Products Management{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #c084fc;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span>Loan Products Catalog</span>
+            </h1>
+            <div class="muted">Configure lending policy parameters, interest rates, tenure boundaries, and affordability thresholds.</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh products">
+                <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+            </button>
+            <a href="{{ url_for('manager.create_loan_product') }}" class="btn primary" style="padding: 9px 18px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Create New Product</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Product Summary Metrics -->
+    <div class="grid3" style="margin-bottom: 24px;">
+        <div class="stat">
+            <span>Total Loan Products</span>
+            <b style="color: #ffffff;">{{ total_products }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Registered lending facilities</div>
+        </div>
+        <div class="stat">
+            <span>Active Products</span>
+            <b style="color: #34d399;">{{ active_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Selectable by applicants</div>
+        </div>
+        <div class="stat">
+            <span>Inactive Products</span>
+            <b style="color: #94a3b8;">{{ inactive_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Deactivated or archived</div>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="box" style="padding: 0; overflow: hidden;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
+            <div>
+                <h2 style="margin: 0; font-size: 15px;">Configured Lending Facilities</h2>
+                <span class="muted" style="font-size: 12px;">Underwriting rules, limits, and interest rates</span>
+            </div>
+            <span class="tag" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border-color: rgba(168, 85, 247, 0.3);">
+                Manager Authority Only
+            </span>
+        </div>
+
+        {% if products %}
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Code</th>
+                            <th>Principal Range</th>
+                            <th>Tenure</th>
+                            <th>Interest Rate</th>
+                            <th>Min Income</th>
+                            <th>Max LTI</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: #ffffff;">{{ p.product_name }}</div>
+                                    {% if p.description %}
+                                        <div class="muted" style="font-size: 11px; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p.description }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span style="font-family: var(--font-mono); font-size: 12px; background: rgba(59, 130, 246, 0.1); color: #93c5fd; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                                        {{ p.product_code }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="font-family: var(--font-mono); font-size: 13px;">₹{{ "{:,.0f}".format(p.min_amount) }} – ₹{{ "{:,.0f}".format(p.max_amount) }}</div>
+                                </td>
+                                <td>
+                                    <div style="font-size: 13px;">{{ p.min_term_months }} – {{ p.max_term_months }} mos</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 700; color: #38bdf8; font-family: var(--font-mono);">{{ p.annual_interest_rate }}%</div>
+                                    <span class="muted" style="font-size: 10px;">p.a.</span>
+                                </td>
+                                <td>
+                                    <div style="font-size: 13px;">₹{{ "{:,.0f}".format(p.min_monthly_income) }}</div>
+                                </td>
+                                <td>
+                                    <div style="font-family: var(--font-mono); font-size: 13px;">{{ p.max_loan_to_income_ratio }}x</div>
+                                </td>
+                                <td>
+                                    {% if p.active %}
+                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); font-weight: 600;">ACTIVE</span>
+                                    {% else %}
+                                        <span class="tag" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8; border-color: rgba(148, 163, 184, 0.3);">INACTIVE</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: inline-flex; gap: 8px; align-items: center;">
+                                        <a href="{{ url_for('manager.edit_loan_product', product_id=p.product_id) }}" class="btn" style="padding: 5px 12px; font-size: 12px;">
+                                            Edit
+                                        </a>
+                                        <form method="POST" action="{{ url_for('manager.toggle_product_status', product_id=p.product_id) }}" style="display: inline; margin: 0;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn" style="padding: 5px 10px; font-size: 12px; border-color: {% if p.active %}rgba(239, 68, 68, 0.4){% else %}rgba(16, 185, 129, 0.4){% endif %}; color: {% if p.active %}#f87171{% else %}#34d399{% endif %};" onclick="return confirm('Are you sure you want to {% if p.active %}deactivate{% else %}activate{% endif %} {{ p.product_name }}?');">
+                                                {% if p.active %}Deactivate{% else %}Activate{% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 48px; text-align: center;" class="muted">
+                <p>No loan products registered in the system yet.</p>
+                <a href="{{ url_for('manager.create_loan_product') }}" class="btn primary" style="padding: 8px 18px; margin-top: 12px;">Create First Product</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

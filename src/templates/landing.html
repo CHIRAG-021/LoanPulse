@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Smarter Loan Operations. Clearer Decisions.{% endblock %}
+{% block meta_description %}Discover LoanPulse, the modern fintech platform for transparent, rule-based loan evaluation, automated credit workflows, and streamlined lending decisions.{% endblock %}
+
+{% block content %}
+<style>
+.hero-title-main {
+    color: #2563eb !important;
+}
+html[data-theme="dark"] .hero-title-main {
+    color: #60a5fa !important;
+}
+.hero-title span.gradient {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    display: inline-block;
+}
+html[data-theme="dark"] .hero-title span.gradient {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    display: inline-block;
+}
+</style>
+<div class="landing-hero">
+    <div class="hero-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>Modern Fintech Operations Platform</span>
+    </div>
+
+    <h1 class="hero-title">
+        <span class="hero-title-main">Loan operations,</span> <span class="gradient">simplified.</span>
+    </h1>
+
+    <p class="hero-desc">
+        A transparent, rule-based loan application and workflow management platform. Streamline applicant submissions, officer ratio evaluations, and executive decisioning in a unified console.
+    </p>
+
+    <div class="hero-cta-group" style="margin-bottom: 16px;">
+        <a href="{{ url_for('auth.signup') }}" class="btn primary">
+            <span>Sign Up / Get Started</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn">
+            <span>Log In</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        </a>
+    </div>
+
+    <p class="muted" style="font-size: 13px; margin: 0 auto 42px; position: relative; z-index: 1;">
+        Create your LoanPulse account to apply for and track your loans.
+    </p>
+</div>
+
+<!-- Product Preview Visual Mockup -->
+<div class="product-preview">
+    <div class="preview-bar">
+        <div class="preview-dots">
+            <span class="preview-dot" style="background: #ef4444;"></span>
+            <span class="preview-dot" style="background: #f59e0b;"></span>
+            <span class="preview-dot" style="background: #10b981;"></span>
+        </div>
+        <span class="muted" style="font-size: 11.5px; font-family: var(--font-mono);">app.loanpulse.io/console</span>
+        <span class="tag preview-tag">SYSTEM PREVIEW</span>
+    </div>
+
+    <div class="preview-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;">Application #APP-1042</div>
+                <div class="preview-app-title">Personal Term Loan Evaluation</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="status status-PENDING_MANAGER_REVIEW">Pending Manager Decision</span>
+                <span class="tag" style="background: var(--bg-card);">Rule: STANDARD_CREDIT</span>
+            </div>
+        </div>
+
+        <div class="grid4" style="margin-bottom: 22px;">
+            <div class="stat">
+                <span>Requested Principal</span>
+                <b class="preview-stat-num">₹2,50,000</b>
+            </div>
+            <div class="stat">
+                <span>Monthly Income</span>
+                <b class="preview-stat-num">₹65,000</b>
+            </div>
+            <div class="stat">
+                <span>Calculated DTI</span>
+                <b class="preview-stat-success">3.85x <small style="font-size: 12px; color: var(--text-muted);">&lt; 6.00x</small></b>
+            </div>
+            <div class="stat">
+                <span>Rule Assessment</span>
+                <b class="preview-stat-success">ELIGIBLE</b>
+            </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+                <span style="font-size: 13px; color: var(--text-secondary);">Officer <b>A. Kumar</b> evaluated application · Forwarded to Executive Review</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <span class="btn success" style="padding: 5px 12px; font-size: 12px; pointer-events: none;">Approve Loan</span>
+                <span class="btn danger" style="padding: 5px 12px; font-size: 12px; pointer-events: none;">Reject</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Capabilities Section -->
+<section class="capability-section" id="features">
+    <div class="section-head">
+        <h2>Core Platform Capabilities</h2>
+        <p class="muted">Engineered strictly around the documented LoanPulse operational workflow.</p>
+    </div>
+
+    <div class="capability-grid">
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h3>Application Management</h3>
+            <p>Customers submit structured loan requests with validated income, principal amount, term length, and loan purpose.</p>
+        </div>
+
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+            <h3>Rule-Based Assessment</h3>
+            <p>Deterministic calculations evaluate eligibility against income thresholds and loan-to-income caps with no opaque AI black boxes.</p>
+        </div>
+
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Role-Based Workflow</h3>
+            <p>Rigorous separation of duties ensures Customers apply, Officers assess, and Managers hold final decision authority.</p>
+        </div>
+
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            </div>
+            <h3>Disbursement Tracking</h3>
+            <p>Approved loans transition cleanly through disbursement recording with verified amounts and execution dates.</p>
+        </div>
+
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            </div>
+            <h3>Lifecycle Notifications</h3>
+            <p>Automated status notifications alert stakeholders whenever an application moves between workflow states.</p>
+        </div>
+
+        <div class="capability-card">
+            <div class="capability-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Transparent Auditing</h3>
+            <p>Every review, assessment ratio, and executive decision is stored with full relational integrity and timestamps.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Visual Workflow Pipeline Section -->
+<section class="workflow-section" id="how-it-works">
+    <div class="section-head" style="margin-bottom: 24px;">
+        <h2>The LoanPulse Operational Lifecycle</h2>
+        <p class="muted">Traceable from initial borrower application to final disbursement and customer notification.</p>
+    </div>
+
+    <div class="workflow-pipeline">
+        <div class="workflow-step">
+            <span class="workflow-step-num">1</span>
+            <h4>Customer Submits</h4>
+            <p>Application saved in SQLite with PENDING_REVIEW state.</p>
+        </div>
+
+        <div class="workflow-step">
+            <span class="workflow-step-num">2</span>
+            <h4>Officer Assesses</h4>
+            <p>Deterministic rules calculate loan-to-income ratios and eligibility.</p>
+        </div>
+
+        <div class="workflow-step">
+            <span class="workflow-step-num">3</span>
+            <h4>Manager Decides</h4>
+            <p>Executive review approves or rejects the application.</p>
+        </div>
+
+        <div class="workflow-step">
+            <span class="workflow-step-num">4</span>
+            <h4>Loan Disburses</h4>
+            <p>Approved loans are recorded as DISBURSED with release date.</p>
+        </div>
+
+        <div class="workflow-step">
+            <span class="workflow-step-num">5</span>
+            <h4>In-App Alerts</h4>
+            <p>Real-time lifecycle update generated for the borrower.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Bottom CTA Banner -->
+<div class="landing-cta-banner">
+    <h3>Ready to Get Started?</h3>
+    <p class="muted" style="max-width: 500px; margin: 0 auto 24px;">Apply for a term loan today or sign in to your enterprise operations portal.</p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('auth.signup') }}" class="btn primary" style="padding: 10px 20px;">Sign Up as Customer</a>
+        <a href="{{ url_for('auth.login') }}" class="btn" style="padding: 10px 20px;">Log In</a>
+    </div>
+</div>
+{% endblock %}

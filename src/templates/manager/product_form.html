@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — {% if is_edit %}Edit {{ product.product_name }}{% else %}New Loan Product{% endif %}{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 820px; margin: 0 auto;">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #c084fc;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span>{% if is_edit %}Edit Product: {{ product.product_name }}{% else %}Create New Loan Product{% endif %}</span>
+            </h1>
+            <div class="muted">Define underwriting eligibility limits, interest rates, and loan terms.</div>
+        </div>
+        <a href="{{ url_for('manager.loan_products_list') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
+            <span>← Back to Products</span>
+        </a>
+    </div>
+
+    {% if errors %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; color: #f87171;">
+            <b style="display: block; margin-bottom: 6px; font-size: 13px;">Form submission errors:</b>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                {% for field_name, err in errors.items() %}
+                    <li><b>{{ field_name|replace('_', ' ')|title }}:</b> {{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="box" style="padding: 28px;">
+        <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border-color);">
+                <h2 style="font-size: 16px; margin: 0 0 6px;">Product Identity</h2>
+                <div class="muted" style="font-size: 12.5px;">Public name, system code, and product description shown to customers.</div>
+            </div>
+
+            <div class="grid" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="product_name">Product Name <span style="color: #f87171;">*</span></label>
+                    <input type="text" id="product_name" name="product_name" class="form-control" required placeholder="e.g. Personal Loan" value="{{ form_data.get('product_name', '') }}">
+                    {% if errors.get('product_name') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('product_name') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="product_code">Product Code <span style="color: #f87171;">*</span></label>
+                    <input type="text" id="product_code" name="product_code" class="form-control" required placeholder="e.g. PERSONAL" value="{{ form_data.get('product_code', '') }}" style="font-family: var(--font-mono); text-transform: uppercase;">
+                    <div class="muted" style="font-size: 11px; margin-top: 3px;">Unique uppercase identifier (alphanumeric and underscores)</div>
+                    {% if errors.get('product_code') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('product_code') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="2" placeholder="Brief summary of loan purpose and target borrower profile...">{{ form_data.get('description', '') }}</textarea>
+                {% if errors.get('description') %}
+                    <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('description') }}</div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border-color);">
+                <h2 style="font-size: 16px; margin: 0 0 6px;">Facility Parameters & Boundaries</h2>
+                <div class="muted" style="font-size: 12.5px;">Permitted amount range, repayment tenures, and applicable annual interest rate.</div>
+            </div>
+
+            <div class="grid" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="min_amount">Minimum Loan Amount (₹) <span style="color: #f87171;">*</span></label>
+                    <input type="number" step="1000" id="min_amount" name="min_amount" class="form-control" required placeholder="10000" value="{{ form_data.get('min_amount', '') }}">
+                    {% if errors.get('min_amount') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('min_amount') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="max_amount">Maximum Loan Amount (₹) <span style="color: #f87171;">*</span></label>
+                    <input type="number" step="1000" id="max_amount" name="max_amount" class="form-control" required placeholder="500000" value="{{ form_data.get('max_amount', '') }}">
+                    {% if errors.get('max_amount') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('max_amount') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="min_term_months">Minimum Tenure (Months) <span style="color: #f87171;">*</span></label>
+                    <input type="number" id="min_term_months" name="min_term_months" class="form-control" required placeholder="12" value="{{ form_data.get('min_term_months', '') }}">
+                    {% if errors.get('min_term_months') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('min_term_months') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="max_term_months">Maximum Tenure (Months) <span style="color: #f87171;">*</span></label>
+                    <input type="number" id="max_term_months" name="max_term_months" class="form-control" required placeholder="60" value="{{ form_data.get('max_term_months', '') }}">
+                    {% if errors.get('max_term_months') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('max_term_months') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid3" style="margin-bottom: 24px;">
+                <div class="form-group">
+                    <label for="annual_interest_rate">Annual Interest Rate (% p.a.) <span style="color: #f87171;">*</span></label>
+                    <input type="number" step="0.05" id="annual_interest_rate" name="annual_interest_rate" class="form-control" required placeholder="11.5" value="{{ form_data.get('annual_interest_rate', '') }}">
+                    {% if errors.get('annual_interest_rate') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('annual_interest_rate') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="min_monthly_income">Min Monthly Income (₹) <span style="color: #f87171;">*</span></label>
+                    <input type="number" step="1000" id="min_monthly_income" name="min_monthly_income" class="form-control" required placeholder="25000" value="{{ form_data.get('min_monthly_income', '') }}">
+                    {% if errors.get('min_monthly_income') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('min_monthly_income') }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="max_loan_to_income_ratio">Max LTI Ratio <span style="color: #f87171;">*</span></label>
+                    <input type="number" step="0.05" id="max_loan_to_income_ratio" name="max_loan_to_income_ratio" class="form-control" required placeholder="0.50" value="{{ form_data.get('max_loan_to_income_ratio', '') }}">
+                    <div class="muted" style="font-size: 11px; margin-top: 3px;">Max loan / (monthly income × 12)</div>
+                    {% if errors.get('max_loan_to_income_ratio') %}
+                        <div class="field-error" style="color: #f87171; font-size: 12px; margin-top: 4px;">{{ errors.get('max_loan_to_income_ratio') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 28px; padding: 14px 18px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; gap: 12px;">
+                <input type="checkbox" id="active" name="active" value="true" {% if form_data.get('active', True) %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                <div>
+                    <label for="active" style="cursor: pointer; font-weight: 600; margin: 0; color: #ffffff;">Product is Active</label>
+                    <div class="muted" style="font-size: 12px;">When active, customers can select this product when submitting new applications.</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <a href="{{ url_for('manager.loan_products_list') }}" class="btn" style="padding: 10px 22px;">Cancel</a>
+                <button type="submit" class="btn primary" style="padding: 10px 24px; font-weight: 700;">
+                    {% if is_edit %}Save Product Changes{% else %}Create Loan Product{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

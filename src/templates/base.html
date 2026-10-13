@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LoanPulse — Fintech Loan Operations Platform{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ meta_description or 'LoanPulse is a transparent, rule-based loan management platform for submitting applications, reviewing eligibility, tracking application status, and managing loan workflows.' }}{% endblock %}">
+    {% block robots %}
+    {% if current_user.is_authenticated %}
+    <meta name="robots" content="noindex, nofollow">
+    {% endif %}
+    {% endblock %}
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('loanpulse_theme');
+                var theme = (savedTheme === 'dark') ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='loanpulse.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='loanpulse.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='loanpulse.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=optional" media="print" onload="this.media='all'" referrerpolicy="no-referrer">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=optional" referrerpolicy="no-referrer">
+    </noscript>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v='1.2') }}">
+</head>
+<body>
+    <header>
+        {% if current_user.is_authenticated %}
+            {% if current_user.role == 'CUSTOMER' %}
+                {% set brand_url = url_for('customer.dashboard') %}
+                {% set role_label = 'User' %}
+            {% elif current_user.role == 'LOAN_OFFICER' %}
+                {% set brand_url = url_for('officer.queue') %}
+                {% set role_label = 'Officer' %}
+            {% elif current_user.role == 'LOAN_MANAGER' %}
+                {% set brand_url = url_for('manager.queue') %}
+                {% set role_label = 'Manager' %}
+            {% else %}
+                {% set brand_url = url_for('auth.index') %}
+                {% set role_label = current_user.role %}
+            {% endif %}
+
+            {% set logout_args = {} %}
+            {% if request.args.get('demo_role') %}
+                {% set _ = logout_args.update({'demo_role': request.args.get('demo_role')}) %}
+            {% endif %}
+            {% if request.args.get('wid') %}
+                {% set _ = logout_args.update({'wid': request.args.get('wid')}) %}
+            {% endif %}
+        {% else %}
+            {% set brand_url = url_for('auth.index') %}
+        {% endif %}
+        <nav class="topbar">
+            <a href="{{ brand_url }}" class="brand" title="LoanPulse Homepage">
+                <img src="{{ url_for('static', filename='loanpulse.png') }}" alt="LoanPulse" class="brand-logo-img">
+                <span class="brand-text">LoanPulse</span>
+            </a>
+
+            <!-- Mobile Hamburger Button (Visible on mobile <= 768px) -->
+            <button type="button" class="btn-hamburger" id="navDrawerOpenBtn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navMobileDrawer">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <!-- Desktop Navigation Content (Hidden on mobile <= 768px) -->
+            <div class="nav-desktop-content">
+            
+            {% if current_user.is_authenticated %}
+                {% if current_user.role == 'CUSTOMER' %}
+                    <a href="{{ url_for('customer.dashboard') }}" class="nav {% if request.endpoint == 'customer.dashboard' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{{ url_for('customer.applications_list') }}" class="nav {% if request.endpoint == 'customer.applications_list' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>My Applications</span>
+                    </a>
+                    <a href="{{ url_for('customer.kyc') }}" class="nav {% if request.endpoint in ['customer.kyc', 'customer.upload_document'] %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>KYC & Documents</span>
+                    </a>
+                    <a href="{{ url_for('customer.profile') }}" class="nav {% if request.endpoint == 'customer.profile' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>Profile</span>
+                    </a>
+                    <a href="{{ url_for('customer.emi_calculator') }}" class="nav {% if request.endpoint == 'customer.emi_calculator' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
+                        <span>Calculator</span>
+                    </a>
+                {% elif current_user.role == 'LOAN_OFFICER' %}
+                    <a href="{{ url_for('officer.queue') }}" class="nav {% if request.endpoint in ['officer.queue', 'officer.review_application'] %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Applications</span>
+                    </a>
+                    <a href="{{ url_for('officer.kyc_queue') }}" class="nav {% if request.endpoint in ['officer.kyc_queue', 'officer.kyc_review'] %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span>KYC Review</span>
+                    </a>
+                    <a href="{{ url_for('officer.disbursements_view') }}" class="nav {% if request.endpoint == 'officer.disbursements_view' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <span>Disbursements</span>
+                    </a>
+                    <a href="{{ url_for('officer.loan_products_view') }}" class="nav {% if request.endpoint == 'officer.loan_products_view' %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <span>Products</span>
+                    </a>
+                {% elif current_user.role == 'LOAN_MANAGER' %}
+                    <a href="{{ url_for('manager.queue') }}" class="nav {% if request.endpoint in ['manager.queue', 'manager.review_application', 'manager.record_decision'] %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span>Applications</span>
+                    </a>
+                    <a href="{{ url_for('manager.loan_products_list') }}" class="nav {% if request.endpoint and 'loan_product' in request.endpoint %}active{% endif %}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <span>Loan Products</span>
+                    </a>
+                {% endif %}
+
+                <a href="{{ url_for('notifications.list_notifications') }}" class="nav {% if request.endpoint == 'notifications.list_notifications' %}active{% endif %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <span>Notifications</span>
+                    {% if unread_notifications_count and unread_notifications_count > 0 %}
+                        <span class="nav-badge">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                
+                <div class="nav-right-cluster">
+                    <button type="button" onclick="refreshCurrentPage(this)" class="btn btn-refresh-nav" title="Click to refresh and get latest updates">
+                        <svg class="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+
+                    <button type="button" class="btn-theme-toggle" id="themeToggleBtn" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+                        <span class="theme-icon-sun" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </span>
+                        <span class="theme-icon-moon" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            </svg>
+                        </span>
+                    </button>
+                    {% if current_user.role == 'CUSTOMER' %}
+                        {% set role_label = 'User' %}
+                    {% elif current_user.role == 'LOAN_MANAGER' %}
+                        {% set role_label = 'Manager' %}
+                    {% elif current_user.role == 'LOAN_OFFICER' %}
+                        {% set role_label = 'Officer' %}
+                    {% else %}
+                        {% set role_label = current_user.role %}
+                    {% endif %}
+
+                    <div class="profile-area" id="profileArea">
+                        <button type="button" class="profile-trigger" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true" aria-label="User profile and settings">
+                            <span class="profile-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </span>
+                            <span class="profile-role-label">{{ role_label }}</span>
+                        </button>
+
+                        <div class="profile-dropdown" id="profileDropdown" role="menu" aria-labelledby="profileDropdownBtn">
+                            <div class="profile-details-section">
+                                <div class="profile-details-header">Who are you?</div>
+                                <div class="profile-user-info">
+                                    <div class="profile-user-avatar">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                            <circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="profile-user-text">
+                                        <div class="profile-user-name">{{ current_user.full_name }}</div>
+                                        <div class="profile-user-role-badge">
+                                            <span class="role-pill role-pill-{{ current_user.role }} role-pill-{{ role_label }}">{{ role_label }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="profile-dropdown-divider"></div>
+                            <div class="profile-dropdown-actions">
+                                {% set logout_args = {} %}
+                                {% if request.args.get('demo_role') %}
+                                    {% set _ = logout_args.update({'demo_role': request.args.get('demo_role')}) %}
+                                {% endif %}
+                                {% if request.args.get('wid') %}
+                                    {% set _ = logout_args.update({'wid': request.args.get('wid')}) %}
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('auth.logout', **logout_args) }}" id="logoutForm" style="margin: 0; padding: 0;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="profile-dropdown-item logout-link" id="dropdownLogoutLink" role="menuitem">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                            <polyline points="16 17 21 12 16 7"/>
+                                            <line x1="21" y1="12" x2="9" y2="12"/>
+                                        </svg>
+                                        <span>Log out</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <a href="{{ url_for('auth.index') }}#features" class="nav">Features</a>
+                <a href="{{ url_for('auth.index') }}#how-it-works" class="nav">How It Works</a>
+                <a href="{{ url_for('customer.emi_calculator') }}" class="nav {% if request.endpoint == 'customer.emi_calculator' %}active{% endif %}">EMI Calculator</a>
+                
+                <div class="nav-right-cluster">
+                    <button type="button" class="btn-theme-toggle" id="themeToggleBtnPublic" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+                        <span class="theme-icon-sun" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="5"/>
+                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </span>
+                        <span class="theme-icon-moon" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            </svg>
+                        </span>
+                    </button>
+                    <a href="{{ url_for('auth.login') }}" class="nav {% if request.endpoint in ['auth.login', 'auth.login_user_view', 'auth.login_admin_view'] %}active{% endif %}" style="font-weight: 600;">Log In</a>
+                    {% if request.endpoint != 'auth.login_admin_view' %}
+                        <a href="{{ url_for('auth.signup') }}" class="btn primary" style="padding: 5px 14px; font-size: 12px;">Sign Up</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+            </div><!-- /.nav-desktop-content -->
+        </nav>
+
+        <!-- Mobile Navigation Drawer Backdrop -->
+        <div class="nav-drawer-backdrop" id="navDrawerBackdrop" aria-hidden="true"></div>
+
+        <!-- Mobile Slide-in Navigation Drawer -->
+        <aside class="nav-drawer" id="navMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation" aria-hidden="true" tabindex="-1">
+            <div class="nav-drawer-header">
+                <a href="{{ brand_url }}" class="brand drawer-brand" title="LoanPulse Homepage">
+                    <img src="{{ url_for('static', filename='loanpulse.png') }}" alt="LoanPulse" class="brand-logo-img">
+                    <span class="brand-text">LoanPulse</span>
+                </a>
+                <button type="button" class="btn-drawer-close" id="navDrawerCloseBtn" aria-label="Close navigation menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="nav-drawer-body">
+                {% if current_user.is_authenticated %}
+                    <div class="nav-drawer-user-info">
+                        <div class="profile-user-avatar">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div class="profile-user-text">
+                            <div class="profile-user-name">{{ current_user.full_name }}</div>
+                            <div class="profile-user-role-badge">
+                                <span class="role-pill role-pill-{{ current_user.role }} role-pill-{{ role_label }}">{{ role_label }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-drawer-section-label">Navigation</div>
+                    <nav class="nav-drawer-links" aria-label="Mobile menu links">
+                        {% if current_user.role == 'CUSTOMER' %}
+                            <a href="{{ url_for('customer.dashboard') }}" class="nav-drawer-link {% if request.endpoint == 'customer.dashboard' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="{{ url_for('customer.applications_list') }}" class="nav-drawer-link {% if request.endpoint == 'customer.applications_list' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                <span>My Applications</span>
+                            </a>
+                            <a href="{{ url_for('customer.kyc') }}" class="nav-drawer-link {% if request.endpoint in ['customer.kyc', 'customer.upload_document'] %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>KYC & Documents</span>
+                            </a>
+                            <a href="{{ url_for('customer.profile') }}" class="nav-drawer-link {% if request.endpoint == 'customer.profile' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{{ url_for('customer.emi_calculator') }}" class="nav-drawer-link {% if request.endpoint == 'customer.emi_calculator' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
+                                <span>Calculator</span>
+                            </a>
+                        {% elif current_user.role == 'LOAN_OFFICER' %}
+                            <a href="{{ url_for('officer.queue') }}" class="nav-drawer-link {% if request.endpoint in ['officer.queue', 'officer.review_application'] %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                <span>Applications</span>
+                            </a>
+                            <a href="{{ url_for('officer.kyc_queue') }}" class="nav-drawer-link {% if request.endpoint in ['officer.kyc_queue', 'officer.kyc_review'] %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                                <span>KYC Review</span>
+                            </a>
+                            <a href="{{ url_for('officer.disbursements_view') }}" class="nav-drawer-link {% if request.endpoint == 'officer.disbursements_view' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                                <span>Disbursements</span>
+                            </a>
+                            <a href="{{ url_for('officer.loan_products_view') }}" class="nav-drawer-link {% if request.endpoint == 'officer.loan_products_view' %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                                <span>Products</span>
+                            </a>
+                        {% elif current_user.role == 'LOAN_MANAGER' %}
+                            <a href="{{ url_for('manager.queue') }}" class="nav-drawer-link {% if request.endpoint in ['manager.queue', 'manager.review_application', 'manager.record_decision'] %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                <span>Applications</span>
+                            </a>
+                            <a href="{{ url_for('manager.loan_products_list') }}" class="nav-drawer-link {% if request.endpoint and 'loan_product' in request.endpoint %}active{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                                <span>Loan Products</span>
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('notifications.list_notifications') }}" class="nav-drawer-link {% if request.endpoint == 'notifications.list_notifications' %}active{% endif %}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            <span>Notifications</span>
+                            {% if unread_notifications_count and unread_notifications_count > 0 %}
+                                <span class="nav-badge">{{ unread_notifications_count }}</span>
+                            {% endif %}
+                        </a>
+                    </nav>
+
+                    <div class="nav-drawer-divider"></div>
+                    <div class="nav-drawer-section-label">Preferences</div>
+
+                    <div class="nav-drawer-theme-row">
+                        <button type="button" class="btn-theme-toggle nav-drawer-theme-btn" id="themeToggleBtnDrawer" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+                            <span class="theme-icon-sun" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                                </svg>
+                            </span>
+                            <span class="theme-icon-moon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                </svg>
+                            </span>
+                            <span class="drawer-theme-label">Theme Mode</span>
+                        </button>
+                    </div>
+
+                    <div class="nav-drawer-actions">
+                        <form method="POST" action="{{ url_for('auth.logout', **logout_args) }}" id="drawerLogoutForm" style="margin: 0; padding: 0; width: 100%;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn-drawer-logout" id="drawerLogoutBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                    <polyline points="16 17 21 12 16 7"/>
+                                    <line x1="21" y1="12" x2="9" y2="12"/>
+                                </svg>
+                                <span>Log out</span>
+                            </button>
+                        </form>
+                    </div>
+
+                {% else %}
+                    <div class="nav-drawer-section-label">Navigation</div>
+                    <nav class="nav-drawer-links" aria-label="Mobile menu links">
+                        <a href="{{ url_for('auth.index') }}#features" class="nav-drawer-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                            <span>Features</span>
+                        </a>
+                        <a href="{{ url_for('auth.index') }}#how-it-works" class="nav-drawer-link">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span>How It Works</span>
+                        </a>
+                        <a href="{{ url_for('customer.emi_calculator') }}" class="nav-drawer-link {% if request.endpoint == 'customer.emi_calculator' %}active{% endif %}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
+                            <span>EMI Calculator</span>
+                        </a>
+                    </nav>
+
+                    <div class="nav-drawer-divider"></div>
+                    <div class="nav-drawer-section-label">Preferences</div>
+
+                    <div class="nav-drawer-theme-row">
+                        <button type="button" class="btn-theme-toggle nav-drawer-theme-btn" id="themeToggleBtnDrawerPublic" aria-label="Switch to Dark Mode" title="Switch to Dark Mode">
+                            <span class="theme-icon-sun" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                                </svg>
+                            </span>
+                            <span class="theme-icon-moon" aria-hidden="true">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                </svg>
+                            </span>
+                            <span class="drawer-theme-label">Theme Mode</span>
+                        </button>
+                    </div>
+
+                    <div class="nav-drawer-divider"></div>
+                    <div class="nav-drawer-actions">
+                        <a href="{{ url_for('auth.login') }}" class="btn-drawer-action btn-drawer-login {% if request.endpoint in ['auth.login', 'auth.login_user_view', 'auth.login_admin_view'] %}active{% endif %}">Log In</a>
+                        {% if request.endpoint != 'auth.login_admin_view' %}
+                            <a href="{{ url_for('auth.signup') }}" class="btn-drawer-action btn-drawer-signup">Sign Up</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="nav-drawer-footer">
+                <span class="nav-drawer-version">LoanPulse v1.0 · Fintech Platform</span>
+            </div>
+        </aside>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+        <div>
+            <b>LoanPulse</b> — Enterprise Loan Operations Platform
+        </div>
+        <div class="muted" style="margin-top: 6px; font-size: 11px;">
+            Deterministic, rule-based loan evaluation and lifecycle management.
+        </div>
+    </footer>
+
+    <script>
+    (function() {
+        // Window-scoped identity management:
+        // Resolve or establish unique window ID in this browsing context's sessionStorage
+        let wid = sessionStorage.getItem('loanpulse_wid');
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlWid = urlParams.get('wid');
+
+        if (urlWid) {
+            wid = urlWid;
+            sessionStorage.setItem('loanpulse_wid', wid);
+        } else if (!wid) {
+            wid = 'w_' + Math.random().toString(36).substring(2, 10);
+            sessionStorage.setItem('loanpulse_wid', wid);
+        }
+
+        // Attach wid and csrf_token to any form submission if not already present
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form) {
+                if (!form.querySelector('input[name="wid"]')) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'wid';
+                    input.value = wid;
+                    form.appendChild(input);
+                }
+                if (csrfToken && !form.querySelector('input[name="csrf_token"]')) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrf_token';
+                    csrfInput.value = csrfToken;
+                    form.appendChild(csrfInput);
+                }
+            }
+        });
+
+        // Intercept fetch calls to include X-Window-ID and X-CSRFToken
+        const origFetch = window.fetch;
+        if (origFetch) {
+            window.fetch = function(url, options) {
+                options = options || {};
+                options.headers = options.headers || {};
+                if (options.headers instanceof Headers) {
+                    if (!options.headers.has('X-Window-ID')) {
+                        options.headers.append('X-Window-ID', wid);
+                    }
+                    if (csrfToken && !options.headers.has('X-CSRFToken')) {
+                        options.headers.append('X-CSRFToken', csrfToken);
+                    }
+                } else if (typeof options.headers === 'object') {
+                    if (!options.headers['X-Window-ID']) {
+                        options.headers['X-Window-ID'] = wid;
+                    }
+                    if (csrfToken && !options.headers['X-CSRFToken']) {
+                        options.headers['X-CSRFToken'] = csrfToken;
+                    }
+                }
+                return origFetch(url, options);
+            };
+        }
+    })();
+
+    function refreshCurrentPage(btn) {
+        if (btn) {
+            btn.classList.add('refreshing');
+            const icon = btn.querySelector('.sync-icon');
+            if (icon) {
+                icon.classList.add('spin-animation');
+            }
+        }
+        // Cache-busting URL reload preserving active query parameters (e.g. demo_role, wid)
+        const url = new URL(window.location.href);
+        url.searchParams.set('_t', Date.now());
+        window.location.href = url.toString();
+    }
+
+    // Profile Dropdown Toggle & Dismissal
+    (function() {
+        function initProfileDropdown() {
+            const profileArea = document.getElementById('profileArea');
+            if (!profileArea) return;
+            const profileBtn = document.getElementById('profileDropdownBtn');
+            if (!profileBtn) return;
+            const profileDropdown = document.getElementById('profileDropdown');
+
+            profileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isOpen = profileArea.classList.toggle('open');
+                profileBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            // Close dropdown when user clicks outside
+            document.addEventListener('click', function(e) {
+                if (!profileArea.contains(e.target)) {
+                    profileArea.classList.remove('open');
+                    profileBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Close dropdown when selecting an option inside
+            if (profileDropdown) {
+                profileDropdown.querySelectorAll('a, button').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        profileArea.classList.remove('open');
+                        profileBtn.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+
+            // Close dropdown on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && profileArea.classList.contains('open')) {
+                    profileArea.classList.remove('open');
+                    profileBtn.setAttribute('aria-expanded', 'false');
+                    profileBtn.focus();
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initProfileDropdown);
+        } else {
+            initProfileDropdown();
+        }
+    })();
+
+    // Responsive Mobile Navigation Drawer
+    (function() {
+        function initNavDrawer() {
+            const openBtn = document.getElementById('navDrawerOpenBtn');
+            const drawer = document.getElementById('navMobileDrawer');
+            const backdrop = document.getElementById('navDrawerBackdrop');
+            const closeBtn = document.getElementById('navDrawerCloseBtn');
+
+            if (!openBtn || !drawer || !backdrop) return;
+
+            let lastFocusedElement = null;
+
+            function openDrawer() {
+                lastFocusedElement = document.activeElement;
+                drawer.classList.add('is-open');
+                backdrop.classList.add('is-open');
+                document.body.classList.add('nav-drawer-open');
+                openBtn.setAttribute('aria-expanded', 'true');
+                drawer.setAttribute('aria-hidden', 'false');
+                backdrop.setAttribute('aria-hidden', 'false');
+
+                // Shift focus to close button
+                if (closeBtn) {
+                    closeBtn.focus();
+                } else {
+                    drawer.focus();
+                }
+            }
+
+            function closeDrawer(restoreFocus) {
+                if (!drawer.classList.contains('is-open')) return;
+                drawer.classList.remove('is-open');
+                backdrop.classList.remove('is-open');
+                document.body.classList.remove('nav-drawer-open');
+                openBtn.setAttribute('aria-expanded', 'false');
+                drawer.setAttribute('aria-hidden', 'true');
+                backdrop.setAttribute('aria-hidden', 'true');
+
+                if (restoreFocus && lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
+            }
+
+            openBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (drawer.classList.contains('is-open')) {
+                    closeDrawer(true);
+                } else {
+                    openDrawer();
+                }
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeDrawer(true);
+                });
+            }
+
+            backdrop.addEventListener('click', function(e) {
+                e.stopPropagation();
+                closeDrawer(true);
+            });
+
+            // Close when clicking on any navigation link or action button (except theme toggle and close button)
+            drawer.querySelectorAll('a, button:not(#themeToggleBtnDrawer):not(#themeToggleBtnDrawerPublic):not(#navDrawerCloseBtn)').forEach(function(el) {
+                el.addEventListener('click', function() {
+                    closeDrawer(false);
+                });
+            });
+
+            // Keyboard navigation: Esc to close, Tab focus trapping
+            document.addEventListener('keydown', function(e) {
+                if (!drawer.classList.contains('is-open')) return;
+
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeDrawer(true);
+                    return;
+                }
+
+                if (e.key === 'Tab') {
+                    const focusables = drawer.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])');
+                    if (!focusables || focusables.length === 0) return;
+
+                    const firstEl = focusables[0];
+                    const lastEl = focusables[focusables.length - 1];
+
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstEl) {
+                            e.preventDefault();
+                            lastEl.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastEl) {
+                            e.preventDefault();
+                            firstEl.focus();
+                        }
+                    }
+                }
+            });
+
+            // Auto-close if screen is resized beyond mobile breakpoint (768px)
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768 && drawer.classList.contains('is-open')) {
+                    closeDrawer(false);
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initNavDrawer);
+        } else {
+            initNavDrawer();
+        }
+    })();
+
+    // Theme Toggle & Persistence
+    (function() {
+        function updateThemeUI(theme) {
+            const isDark = (theme === 'dark');
+            const tooltip = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+            const labelText = isDark ? 'Light Mode' : 'Dark Mode';
+            
+            document.querySelectorAll('.btn-theme-toggle').forEach(function(btn) {
+                btn.setAttribute('aria-label', tooltip);
+                btn.setAttribute('title', tooltip);
+            });
+
+            document.querySelectorAll('.drawer-theme-label').forEach(function(el) {
+                el.textContent = labelText;
+            });
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            try {
+                localStorage.setItem('loanpulse_theme', newTheme);
+            } catch (e) {
+                // LocalStorage may be unavailable
+            }
+            updateThemeUI(newTheme);
+        }
+
+        function initThemeToggle() {
+            const btns = document.querySelectorAll('.btn-theme-toggle');
+            if (!btns.length) return;
+
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            if (currentTheme === 'dark') {
+                updateThemeUI(currentTheme);
+            }
+
+            btns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleTheme();
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initThemeToggle);
+        } else {
+            initThemeToggle();
+        }
+    })();
+    </script>
+</body>
+</html>

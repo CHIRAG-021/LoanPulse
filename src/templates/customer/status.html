@@ -1,0 +1,462 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Application Details: {{ app.application_id }}{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 1080px; margin: 0 auto;">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Application Details: {{ app.application_id }}</span>
+            </h1>
+            <div class="muted">Live status timeline, application parameters, and deterministic assessment details.</div>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 6px 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh application status">
+                <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+            </button>
+            <span class="status status-{{ app.status }}" style="font-size: 12px; padding: 6px 14px;">{{ app.status }}</span>
+        </div>
+    </div>
+
+    <!-- Key Metrics Grid with REQUIRED DOM IDs for test backward-compatibility -->
+    <div class="grid4" style="margin-bottom: 24px;">
+        <div class="stat">
+            <span>Application Reference</span>
+            <b id="statusAppId" style="color: #60a5fa; font-family: var(--font-mono); font-size: 20px;">{{ app.application_id }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">Customer #{{ app.customer_id }}</div>
+        </div>
+        <div class="stat">
+            <span>Current Status</span>
+            <div style="margin-top: 6px;">
+                <b id="statusValue" class="status status-{{ app.status }}" style="font-size: 12px;">{{ app.status }}</b>
+            </div>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">
+                Disbursement: {{ app.disbursement_status }}
+            </div>
+        </div>
+        <div class="stat">
+            <span>Last Updated</span>
+            <b id="statusDate" style="font-size: 16px; margin-top: 8px;">{{ app.updated_at.isoformat() if app.updated_at else '—' }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">Created: {{ app.created_at.isoformat() if app.created_at else '—' }}</div>
+        </div>
+        <div class="stat">
+            <span>Requested Amount</span>
+            <b id="statusAmount" style="color: #ffffff; font-size: 20px;">₹{{ '{:,.2f}'.format(app.requested_amount) }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">
+                {% if app.approved_amount %}
+                    Approved: ₹{{ '{:,.2f}'.format(app.approved_amount) }}
+                {% else %}
+                    Term: {{ app.term_months }} months
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Specific Action Banners -->
+    {% if app.status == 'DOCUMENTS_REQUIRED' %}
+        <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #fbbf24;">Action Required: Missing or Additional Documents Requested</h3>
+                    <p style="margin: 0 0 14px; font-size: 13.5px; color: var(--text-secondary);">
+                        The reviewing loan officer has requested additional documentation before underwriting can continue:
+                    </p>
+                    <div style="background: rgba(15, 23, 42, 0.6); border-left: 3px solid #fbbf24; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #f1f5f9; margin-bottom: 16px;">
+                        <b>Officer Instructions:</b> {{ app.review_notes or 'Please provide updated income proof, bank statements, or identification documents.' }}
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <a href="{{ url_for('customer.kyc') }}" class="btn" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-size: 13px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <span>Upload Documents in KYC Workspace →</span>
+                        </a>
+                        <form method="POST" action="{{ url_for('customer.resubmit_documents', application_id=app.application_id) }}" style="display: inline-flex; gap: 8px; align-items: center;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="text" name="notes" placeholder="Optional notes for loan officer..." style="font-size: 12.5px; padding: 6px 10px; width: 240px;">
+                            <button type="submit" class="btn primary" style="padding: 7px 16px; font-size: 13px;">
+                                <span>Resubmit for Review</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif app.status == 'REJECTED' %}
+        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                <div>
+                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #f87171;">Application Not Approved</h3>
+                    <p style="margin: 0 0 10px; font-size: 13.5px; color: var(--text-secondary);">
+                        This loan application was evaluated against deterministic credit policy criteria and was not approved.
+                    </p>
+                    {% if app.rejection_reason %}
+                        <div style="background: rgba(15, 23, 42, 0.6); border-left: 3px solid #f87171; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #f1f5f9;">
+                            <b>Recorded Reason:</b> {{ app.rejection_reason }}
+                        </div>
+                    {% elif current_user.role != 'CUSTOMER' and app.review_notes %}
+                        <div style="background: rgba(15, 23, 42, 0.6); border-left: 3px solid #f87171; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #f1f5f9;">
+                            <b>Review Notes:</b> {{ app.review_notes }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% elif app.status == 'DRAFT' %}
+        <div style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+                <h3 style="margin: 0 0 4px; font-size: 15px; color: #93c5fd;">Saved Application Draft</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--text-secondary);">
+                    This borrowing request is saved as a draft and has not yet been submitted into the credit underwriting queue.
+                </p>
+            </div>
+            <a href="{{ url_for('customer.edit_draft', application_id=app.application_id) }}" class="btn primary" style="font-size: 13px; padding: 8px 18px;">
+                <span>Resume & Complete Application →</span>
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Structured Lifecycle Timeline -->
+    <div class="box" style="margin-bottom: 24px;">
+        <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Operational Lifecycle Progress</span>
+        </h2>
+        <p class="muted" style="margin-bottom: 18px; font-size: 13px;">Progress moves deterministically through credit operational stages.</p>
+
+        <div class="lifecycle-tracker">
+            <!-- Stage 1: Submitted -->
+            {% set is_submitted = app.status != 'DRAFT' %}
+            <div class="lifecycle-stage {% if is_submitted %}completed{% else %}current{% endif %}">
+                <div class="lifecycle-stage-head">
+                    <span class="lifecycle-stage-icon">{% if is_submitted %}✓{% else %}1{% endif %}</span>
+                    <span class="tag" style="font-size: 10px; border: none; {% if is_submitted %}background: rgba(16, 185, 129, 0.15); color: #34d399;{% else %}background: rgba(59, 130, 246, 0.2); color: #93c5fd;{% endif %}">
+                        {% if is_submitted %}Done{% else %}Draft{% endif %}
+                    </span>
+                </div>
+                <h4>1. Submitted</h4>
+                <p>{% if is_submitted %}Application submitted on {{ app.created_at }}{% else %}Draft saved{% endif %}</p>
+            </div>
+
+            <!-- Stage 2: Officer Review -->
+            {% set officer_done = app.status in ['PENDING_MANAGER_REVIEW', 'APPROVED', 'REJECTED', 'DISBURSED'] %}
+            {% set officer_current = app.status in ['PENDING_REVIEW', 'UNDER_REVIEW', 'DOCUMENTS_REQUIRED'] %}
+            <div class="lifecycle-stage {% if officer_done %}completed{% elif officer_current %}current{% else %}pending{% endif %}">
+                <div class="lifecycle-stage-head">
+                    <span class="lifecycle-stage-icon">{% if officer_done %}✓{% else %}2{% endif %}</span>
+                    <span class="tag" style="font-size: 10px; border: none; {% if officer_done %}background: rgba(16, 185, 129, 0.15); color: #34d399;{% elif officer_current %}background: rgba(59, 130, 246, 0.2); color: #93c5fd;{% else %}background: var(--bg-muted); color: var(--text-faint);{% endif %}">
+                        {% if officer_done %}Evaluated{% elif app.status == 'DOCUMENTS_REQUIRED' %}Action Req.{% elif officer_current %}In Review{% else %}Pending{% endif %}
+                    </span>
+                </div>
+                <h4>2. Officer Review</h4>
+                <p>{% if officer_done %}Credit rule assessment completed{% elif app.status == 'DOCUMENTS_REQUIRED' %}Missing documents requested{% elif officer_current %}Underwriting evaluation in progress{% else %}Awaiting assessment{% endif %}</p>
+            </div>
+
+            <!-- Stage 3: Manager Review -->
+            {% set manager_done = app.status in ['APPROVED', 'REJECTED', 'DISBURSED'] %}
+            {% set manager_current = app.status == 'PENDING_MANAGER_REVIEW' %}
+            <div class="lifecycle-stage {% if manager_done %}completed{% elif manager_current %}current{% else %}pending{% endif %}">
+                <div class="lifecycle-stage-head">
+                    <span class="lifecycle-stage-icon">{% if manager_done %}✓{% else %}3{% endif %}</span>
+                    <span class="tag" style="font-size: 10px; border: none; {% if manager_done %}background: rgba(16, 185, 129, 0.15); color: #34d399;{% elif manager_current %}background: rgba(168, 85, 247, 0.2); color: #d8b4fe;{% else %}background: var(--bg-muted); color: var(--text-faint);{% endif %}">
+                        {% if manager_done %}Decided{% elif manager_current %}Under Review{% else %}Pending{% endif %}
+                    </span>
+                </div>
+                <h4>3. Manager Review</h4>
+                <p>{% if manager_done %}Executive decision recorded{% elif manager_current %}Awaiting Executive Sign-off{% else %}Queue priority{% endif %}</p>
+            </div>
+
+            <!-- Stage 4: Decision -->
+            {% set decision_approved = app.status in ['APPROVED', 'DISBURSED'] %}
+            {% set decision_rejected = app.status == 'REJECTED' %}
+            <div class="lifecycle-stage {% if decision_approved %}completed{% elif decision_rejected %}rejected{% else %}pending{% endif %}">
+                <div class="lifecycle-stage-head">
+                    <span class="lifecycle-stage-icon">{% if decision_approved %}✓{% elif decision_rejected %}✕{% else %}4{% endif %}</span>
+                    <span class="tag" style="font-size: 10px; border: none; {% if decision_approved %}background: rgba(16, 185, 129, 0.15); color: #34d399;{% elif decision_rejected %}background: rgba(239, 68, 68, 0.15); color: #f87171;{% else %}background: var(--bg-muted); color: var(--text-faint);{% endif %}">
+                        {% if decision_approved %}Approved{% elif decision_rejected %}Rejected{% else %}Pending{% endif %}
+                    </span>
+                </div>
+                <h4>4. Final Decision</h4>
+                <p>{% if decision_approved %}Approved: ₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }}{% elif decision_rejected %}Credit request rejected{% else %}Awaiting decision{% endif %}</p>
+            </div>
+
+            <!-- Stage 5: Disbursement -->
+            {% set is_disbursed = app.disbursement_status == 'DISBURSED' or app.status == 'DISBURSED' %}
+            {% set is_awaiting_disb = app.status == 'APPROVED' and not is_disbursed %}
+            <div class="lifecycle-stage {% if is_disbursed %}completed{% elif is_awaiting_disb %}current{% else %}pending{% endif %}">
+                <div class="lifecycle-stage-head">
+                    <span class="lifecycle-stage-icon">{% if is_disbursed %}✓{% else %}5{% endif %}</span>
+                    <span class="tag" style="font-size: 10px; border: none; {% if is_disbursed %}background: rgba(16, 185, 129, 0.15); color: #34d399;{% elif is_awaiting_disb %}background: rgba(245, 158, 11, 0.2); color: #fbbf24;{% else %}background: var(--bg-muted); color: var(--text-faint);{% endif %}">
+                        {% if is_disbursed %}Disbursed{% elif is_awaiting_disb %}Ready{% else %}Pending{% endif %}
+                    </span>
+                </div>
+                <h4>5. Disbursement</h4>
+                <p>{% if is_disbursed %}Executed on {{ app.disbursement_date or 'today' }}{% elif is_awaiting_disb %}Approved for disbursement{% else %}Final milestone{% endif %}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Profile & Loan Details Cards -->
+    <div class="grid" style="margin-bottom: 24px;">
+        <div class="box" style="margin-bottom: 0;">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Applicant Information</span>
+            </h2>
+            <div style="display: grid; gap: 14px;">
+                <div>
+                    <label>Applicant Full Name</label>
+                    <input value="{{ app.applicant_name }}" readonly style="font-weight: 600; color: #ffffff;">
+                </div>
+                <div>
+                    <label>Customer Account ID</label>
+                    <input value="{{ app.customer_id }}" readonly>
+                </div>
+                <div>
+                    <label>Verified Monthly Income</label>
+                    <input value="₹{{ '{:,.2f}'.format(app.monthly_income) }}" readonly style="font-weight: 600; font-variant-numeric: tabular-nums; color: #ffffff;">
+                </div>
+            </div>
+        </div>
+
+        <div class="box" style="margin-bottom: 0;">
+            <h2>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span>Loan Details</span>
+            </h2>
+            <div style="display: grid; gap: 14px;">
+                <div>
+                    <label>Requested Loan Principal</label>
+                    <input value="₹{{ '{:,.2f}'.format(app.requested_amount) }}" readonly style="font-weight: 700; color: #ffffff; font-variant-numeric: tabular-nums;">
+                </div>
+                <div>
+                    <label>Repayment Term</label>
+                    <input value="{{ app.term_months }} months ({{ (app.term_months / 12)|round(1) }} years)" readonly>
+                </div>
+                <div>
+                    <label>Approved Principal Amount</label>
+                    <input value="{% if app.approved_amount %}₹{{ '{:,.2f}'.format(app.approved_amount) }}{% else %}Pending final credit approval{% endif %}" readonly style="{% if app.approved_amount %}color: #34d399; font-weight: 700; font-variant-numeric: tabular-nums;{% endif %}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rule-Based Assessment Results Card (if evaluated) -->
+    {% if app.assessments %}
+        {% set latest_assessment = app.assessments|sort(attribute='assessed_at', reverse=true)|first %}
+        <div class="box" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    <span>Deterministic Rule-Based Assessment</span>
+                </h2>
+                <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.35);">
+                    Rule: {{ latest_assessment.rule.rule_name if latest_assessment.rule else 'Standard Rule' }}
+                </span>
+            </div>
+
+            <div style="display: grid; gap: 10px; margin-bottom: 16px;">
+                <div class="rule-check-item">
+                    <div>
+                        <div style="font-weight: 600; color: #ffffff; font-size: 13.5px;">Income Requirement</div>
+                        <div class="muted" style="font-size: 12px;">Minimum income threshold: ₹{{ '{:,.2f}'.format(active_rule.min_monthly_income if active_rule else 30000.0) }}</div>
+                    </div>
+                    {% if app.monthly_income >= (active_rule.min_monthly_income if active_rule else 30000.0) %}
+                        <span class="rule-badge-pass">✓ PASS</span>
+                    {% else %}
+                        <span class="rule-badge-fail">✕ FAIL</span>
+                    {% endif %}
+                </div>
+
+                <div class="rule-check-item">
+                    <div>
+                        <div style="font-weight: 600; color: #ffffff; font-size: 13.5px;">Loan-to-Income Ratio</div>
+                        <div class="muted" style="font-size: 12px;">Calculated ratio: <b>{{ '{:.2f}'.format(latest_assessment.calculated_ratio) }}x</b> (Cap: {{ '{:.2f}'.format(active_rule.max_loan_to_income_ratio if active_rule else 6.0) }}x)</div>
+                    </div>
+                    {% if latest_assessment.calculated_ratio <= (active_rule.max_loan_to_income_ratio if active_rule else 6.0) %}
+                        <span class="rule-badge-pass">✓ PASS</span>
+                    {% else %}
+                        <span class="rule-badge-fail">✕ FAIL</span>
+                    {% endif %}
+                </div>
+
+                <div class="rule-check-item">
+                    <div>
+                        <div style="font-weight: 600; color: #ffffff; font-size: 13.5px;">Term Requirement</div>
+                        <div class="muted" style="font-size: 12px;">Allowed repayment duration: {{ active_rule.min_term_months if active_rule else 12 }} to {{ active_rule.max_term_months if active_rule else 60 }} months</div>
+                    </div>
+                    {% if (active_rule.min_term_months if active_rule else 12) <= app.term_months <= (active_rule.max_term_months if active_rule else 60) %}
+                        <span class="rule-badge-pass">✓ PASS</span>
+                    {% else %}
+                        <span class="rule-badge-fail">✕ FAIL</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="note" style="margin: 0; font-size: 12px;">
+                <b>Audit Note:</b> This assessment is computed deterministically using policy rules and credit criteria without automated AI/ML scoring.
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Status History Card with REQUIRED DOM ID "timeline" for test compatibility -->
+    <div class="box" style="margin-bottom: 24px;">
+        <h2>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Application Status Timeline</span>
+        </h2>
+        <div id="timeline" class="timeline">
+            <div>
+                Application recorded → <b>DRAFT</b> ({{ app.created_at }})
+            </div>
+            {% if app.status != 'DRAFT' %}
+                <div>
+                    Application submitted for processing → <b>{{ app.status }}</b> ({{ app.updated_at }})
+                </div>
+            {% endif %}
+            {% if app.status == 'APPROVED' or app.status == 'DISBURSED' %}
+                <div style="border-left-color: var(--success); background: var(--success-bg); border-color: var(--success-border);">
+                    Final Decision → <b style="color: var(--success-text);">APPROVED</b> (Approved Amount: ₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }})
+                </div>
+                {% if app.disbursement_status == 'DISBURSED' or app.status == 'DISBURSED' %}
+                    <div style="border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.35);">
+                        Fund Execution → <b style="color: #93c5fd;">DISBURSED</b> on {{ app.disbursement_date or 'today' }}
+                    </div>
+                {% endif %}
+            {% elif app.status == 'REJECTED' %}
+                <div style="border-left-color: var(--danger); background: var(--danger-bg); border-color: var(--danger-border);">
+                    Final Decision → <b style="color: var(--danger-text);">REJECTED</b>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Phase 8: Immutable Application Audit Trail History -->
+    {% if audit_logs %}
+        <div class="box" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    <span>Application Audit Trail & History</span>
+                </h2>
+                <span class="muted" style="font-size: 12px;">{{ audit_logs|length }} operational events</span>
+            </div>
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">Timestamp</th>
+                            <th style="width: 140px;">Action</th>
+                            <th style="width: 130px;">Actor / Role</th>
+                            <th style="width: 160px;">Status Transition</th>
+                            <th>Notes / Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs %}
+                            <tr>
+                                <td class="muted" style="font-size: 12px; white-space: nowrap;">
+                                    {{ log.created_at.strftime('%Y-%m-%d %H:%M') if log.created_at else '—' }}
+                                </td>
+                                <td>
+                                    <span class="tag" style="font-size: 11px; font-weight: 600; background: rgba(59, 130, 246, 0.12); color: #93c5fd; border: none;">
+                                        {{ log.action }}
+                                    </span>
+                                </td>
+                                <td style="font-size: 12.5px;">
+                                    {% if current_user.role == 'CUSTOMER' %}
+                                        {% if log.actor_role == 'CUSTOMER' %}
+                                            <div><b>{{ log.actor_name }}</b></div>
+                                            <span class="muted" style="font-size: 10.5px;">Applicant</span>
+                                        {% else %}
+                                            <div><b>{{ log.actor_role|replace('_', ' ')|title }}</b></div>
+                                            <span class="muted" style="font-size: 10.5px;">Authorized Staff</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <div><b>{{ log.actor_name }}</b></div>
+                                        <span class="muted" style="font-size: 10.5px;">{{ log.actor_role }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.from_status and log.from_status != log.to_status %}
+                                        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                                            <span class="status status-{{ log.from_status }}" style="padding: 1px 6px; font-size: 9.5px;">{{ log.from_status }}</span>
+                                            <span class="muted">→</span>
+                                            <span class="status status-{{ log.to_status }}" style="padding: 1px 6px; font-size: 9.5px;">{{ log.to_status }}</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="status status-{{ log.to_status }}" style="padding: 1px 6px; font-size: 9.5px;">{{ log.to_status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="color: var(--text-secondary); font-size: 12.5px;">
+                                    {% if current_user.role == 'CUSTOMER' %}
+                                        {% if log.actor_role == 'CUSTOMER' %}
+                                            {{ log.notes or '—' }}
+                                        {% elif log.to_status == 'DOCUMENTS_REQUIRED' %}
+                                            {{ log.notes or 'Additional documentation requested.' }}
+                                        {% elif log.to_status == 'REJECTED' and app.rejection_reason %}
+                                            {{ app.rejection_reason }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    {% else %}
+                                        {{ log.notes or '—' }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Application-Specific Notifications/Activity History -->
+    {% if app.notifications %}
+        <div class="box" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 15px;">Application Activity & Notifications</h2>
+                <span class="muted" style="font-size: 12px;">{{ app.notifications|length }} events logged</span>
+            </div>
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Event Description</th>
+                            <th>Status Change</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for n in app.notifications %}
+                            <tr>
+                                <td class="muted" style="font-size: 12px; white-space: nowrap;">{{ n.created_at }}</td>
+                                <td style="color: var(--text-secondary); font-size: 13px;">{{ n.message }}</td>
+                                <td>
+                                    <span class="status status-{{ n.new_status }}" style="font-size: 10px; padding: 2px 8px;">{{ n.new_status }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="actions" style="margin-top: 24px;">
+        <a href="{{ url_for('customer.new_application') }}" class="btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Apply for Another Loan</span>
+        </a>
+        <a href="{{ url_for('customer.dashboard') }}" class="btn primary">
+            <span>Back to My Applications</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoanPulse — End-to-End HTML Wireframe</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eee;color:#222}button,input,select,textarea{font:inherit}.topbar{position:sticky;top:0;z-index:20;background:#ccc;border-bottom:2px solid #666;padding:8px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.brand{font-weight:bold;border:1px solid #666;background:#e9e9e9;padding:8px 10px;margin-right:6px}.nav{border:1px solid #666;background:#e5e5e5;padding:7px 9px;cursor:pointer}.nav:hover{background:#fff}.role{margin-left:auto;border:1px solid #666;background:#e5e5e5;padding:7px 9px;font-size:13px}main{max-width:1250px;margin:auto;padding:18px}.screen{display:none;background:#fafafa;border:2px solid #666;min-height:720px;padding:18px}.screen.active{display:block}.final{border:2px dashed #555}.head{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #888;padding-bottom:12px;margin-bottom:16px}.head h1{margin:0 0 6px;font-size:24px}.tag,.finaltag{border:1px solid #555;background:#ddd;padding:5px 8px;font-size:12px;white-space:nowrap;height:max-content}.finaltag{border-style:dashed}.box{border:1px solid #888;background:#e8e8e8;padding:14px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stat{border:1px solid #888;background:#e2e2e2;padding:12px}.stat b{font-size:22px;display:block;margin-top:5px}label{display:block;font-weight:bold;font-size:13px;margin-bottom:5px}input,select,textarea{width:100%;border:1px solid #777;background:#fff;padding:8px}textarea{min-height:70px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.btn{border:1px solid #555;background:#d2d2d2;padding:8px 12px;cursor:pointer}.btn:hover{background:#fff}.primary{font-weight:bold;background:#bbb}.danger{border-style:dashed}table{width:100%;border-collapse:collapse;background:#fff}th,td{border:1px solid #888;padding:8px;text-align:left;font-size:13px}th{background:#d6d6d6}.muted{color:#666;font-size:13px}.status{display:inline-block;border:1px solid #777;background:#ddd;padding:4px 7px;font-size:12px}.steps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}.step{border:1px solid #888;background:#e1e1e1;padding:8px 12px}.step.current{background:#c2c2c2;font-weight:bold}.placeholder{border:1px solid #888;background:#ddd;min-height:90px;padding:16px;display:flex;align-items:center;justify-content:center;text-align:center;color:#555}.note{border-left:4px solid #777;background:#e5e5e5;padding:10px;margin:12px 0}.hidden{display:none!important}.toast{position:fixed;right:18px;bottom:18px;background:#333;color:#fff;padding:10px 14px;border:1px solid #111;display:none;z-index:30}.timeline{display:grid;gap:8px}.timeline div{border-left:4px solid #888;background:#e5e5e5;padding:9px}.chart{border:2px solid #888;background:#ddd;height:180px;padding:12px;display:flex;align-items:center;justify-content:center;text-align:center}.screen-list tr{cursor:pointer}.screen-list tr:hover{background:#eee}@media(max-width:760px){.grid,.grid3,.grid4{grid-template-columns:1fr}.role{margin-left:0}.head{flex-direction:column}.topbar{position:static}}
+</style>
+</head>
+<body>
+<nav class="topbar">
+<div class="brand">LoanPulse: LoanMaster</div>
+<button class="nav" onclick="show('home')">Home</button>
+<button class="nav" onclick="show('screen-list')">Screens</button>
+<button class="nav" onclick="show('us01')">Apply</button>
+<button class="nav" onclick="show('us02')">Status</button>
+<button class="nav" onclick="show('us03')">Assessment</button>
+<button class="nav" onclick="show('us04')">Review</button>
+<button class="nav" onclick="show('us05')">Manager</button>
+<button class="nav" onclick="show('us06')">Disbursement</button>
+<button class="nav" onclick="show('us07')">Notifications</button>
+<button class="nav" onclick="show('us08')">Validation</button>
+<button class="nav" onclick="show('us09')">Access</button>
+<button class="nav" onclick="show('us10')">Reproduce</button>
+<span class="role">Demo role: <b id="roleText">CUSTOMER</b></span>
+</nav>
+<main>
+<section id="home" class="screen active">
+<div class="head"><div><h1>LoanPulse</h1><div class="muted">Loan application and repayment tracking — HTML/JavaScript wireframe only</div></div><span class="tag">HOME · No US/BR</span></div>
+<div class="grid">
+<div class="box"><h2>Demo Login</h2><label>Email</label><input id="loginEmail" value="borrower01@example.test"><label style="margin-top:10px">Password</label><input type="password" value="demo123"><label style="margin-top:10px">Demo role</label><select id="loginRole"><option>CUSTOMER</option><option>LOAN_OFFICER</option><option>LOAN_MANAGER</option></select><div class="actions"><button class="btn primary" onclick="login()">Login</button><button class="btn" onclick="show('screen-list')">View wireframe screens</button></div></div>
+<div class="box"><h2>End-to-end flow</h2><div class="steps"><span class="step">1 Apply</span><span class="step">2 Assess</span><span class="step">3 Review</span><span class="step">4 Manager decision</span><span class="step">5 Disburse</span><span class="step">6 Notify</span></div><div class="note">This is a low-fidelity prototype. It uses browser JavaScript state only. No Python, backend, AI, ML, external library, payment gateway, or real financial data is used.</div></div>
+</div></section>
+
+<section id="screen-list" class="screen">
+<div class="head"><div><h1>Screen list</h1><div class="muted">Every screen mapped to the current user story and business requirement.</div></div><span class="tag">SCREEN LIST · N/A</span></div>
+<table class="screen-list"><thead><tr><th>Screen</th><th>US</th><th>BR</th><th>Scope</th><th>Role</th></tr></thead><tbody>
+<tr onclick="show('home')"><td>Home / Login</td><td>—</td><td>—</td><td>MVP support</td><td>All</td></tr>
+<tr onclick="show('us01')"><td>Loan Application</td><td>US-01</td><td>BR-01</td><td>MVP</td><td>Customer</td></tr>
+<tr onclick="show('us02')"><td>Application Status</td><td>US-02</td><td>BR-02</td><td>MVP</td><td>Customer</td></tr>
+<tr onclick="show('us03')"><td>Rule-Based Assessment</td><td>US-03</td><td>BR-03</td><td>MVP</td><td>Loan Officer</td></tr>
+<tr onclick="show('us04')"><td>Application Review</td><td>US-04</td><td>BR-04</td><td>MVP</td><td>Loan Officer</td></tr>
+<tr onclick="show('us05')"><td>Pending Decision Report</td><td>US-05</td><td>BR-05</td><td>MVP</td><td>Loan Manager</td></tr>
+<tr onclick="show('us06')"><td>Disbursement Update</td><td>US-06</td><td>BR-06</td><td>Final scope</td><td>Loan Officer / Finance</td></tr>
+<tr onclick="show('us07')"><td>Notifications / Updates</td><td>US-07</td><td>BR-07</td><td>Final scope</td><td>Customer / Staff</td></tr>
+<tr onclick="show('us08')"><td>Application Validation</td><td>US-08</td><td>BR-08</td><td>Final scope</td><td>Customer</td></tr>
+<tr onclick="show('us09')"><td>Role Access</td><td>US-09</td><td>BR-09</td><td>Final scope</td><td>All roles</td></tr>
+<tr onclick="show('us10')"><td>Setup / Reproduction</td><td>US-10</td><td>BR-10</td><td>Final scope</td><td>Maintainer</td></tr>
+</tbody></table>
+</section>
+
+<section id="us01" class="screen">
+<div class="head"><div><h1>1. Loan Application</h1><div class="muted">Customer creates/saves a loan application. The Save button creates the application and sends it into the review flow.</div></div><span class="tag">US-01 · BR-01</span></div>
+<div class="steps"><span class="step current">1 Application</span><span class="step">2 Assessment</span><span class="step">3 Review</span><span class="step">4 Decision</span><span class="step">5 Disbursement</span><span class="step">6 Updates</span></div>
+<div class="box"><h2>Application information</h2><div class="grid">
+<div><label>Applicant name *</label><input id="appName" value="Test Borrower 13"></div><div><label>Customer ID *</label><input id="customerId" value="13"></div>
+<div><label>Monthly income *</label><input id="income" type="number" value="60000"></div><div><label>Requested loan amount *</label><input id="amount" type="number" value="200000"></div>
+<div><label>Loan term (months) *</label><select id="term"><option>12</option><option selected>24</option><option>36</option><option>48</option><option>60</option></select></div><div><label>Loan purpose</label><input id="purpose" value="Education"></div>
+</div><div class="note">Required application fields are marked *. Synthetic demonstration data only.</div><div class="actions"><button class="btn primary" onclick="submitApplication()">Save & Submit Application</button><button class="btn" onclick="resetApplication()">Reset</button></div></div>
+<div class="box"><h2>Created application</h2><div id="createdApp" class="placeholder">No new application created in this browser session.</div></div>
+</section>
+
+<section id="us02" class="screen">
+<div class="head"><div><h1>2. Application Status</h1><div class="muted">Customer can see the current status of the submitted application.</div></div><span class="tag">US-02 · BR-02</span></div>
+<div class="grid4"><div class="stat">Application ID<b id="statusAppId">APP-0003</b></div><div class="stat">Current status<b id="statusValue">PENDING_REVIEW</b></div><div class="stat">Last updated<b id="statusDate">2026-10-08</b></div><div class="stat">Requested amount<b id="statusAmount">₹200000</b></div></div>
+<div class="box" style="margin-top:14px"><h2>Application status timeline</h2><div id="timeline" class="timeline"><div>Application saved → <b>DRAFT</b></div><div>Submitted for review → <b>PENDING_REVIEW</b></div></div></div>
+<div class="actions"><button class="btn" onclick="show('us01')">Edit / new application</button><button class="btn primary" onclick="show('us03')">Continue to assessment demo</button></div>
+</section>
+
+<section id="us03" class="screen">
+<div class="head"><div><h1>3. Rule-Based Assessment</h1><div class="muted">Loan officer applies configured, deterministic criteria. No AI/ML scoring.</div></div><span class="tag">US-03 · BR-03</span></div>
+<div class="grid">
+<div class="box"><h2>Application inputs</h2><label>Application ID</label><input id="assessId" value="APP-0003"><label style="margin-top:10px">Monthly income</label><input id="assessIncome" type="number" value="60000"><label style="margin-top:10px">Requested amount</label><input id="assessAmount" type="number" value="200000"><label style="margin-top:10px">Term months</label><input id="assessTerm" type="number" value="24"></div>
+<div class="box"><h2>Active assessment rule</h2><label>Rule</label><select id="rule"><option value="standard">Standard Rule</option><option value="conservative">Conservative Rule</option></select><table style="margin-top:10px"><tr><th>Criterion</th><th>Configured value</th></tr><tr><td>Minimum monthly income</td><td id="minIncome">₹30000</td></tr><tr><td>Maximum loan/income ratio</td><td id="maxRatio">0.50</td></tr><tr><td>Term range</td><td id="termRange">12–60 months</td></tr></table></div>
+</div><div class="actions"><button class="btn primary" onclick="runAssessment()">Run assessment</button></div>
+<div class="box"><h2>Assessment result</h2><div id="assessmentResult" class="placeholder">Result will appear here after the rule is run.</div></div>
+<table><thead><tr><th>Application</th><th>Rule</th><th>Calculated ratio</th><th>Result</th></tr></thead><tbody id="assessmentRows"><tr><td>APP-0003</td><td>Standard Rule</td><td>0.28</td><td>ELIGIBLE</td></tr><tr><td>APP-0004</td><td>Standard Rule</td><td>0.25</td><td>ELIGIBLE</td></tr><tr><td>APP-0005</td><td>Standard Rule</td><td>0.25</td><td>ELIGIBLE</td></tr></tbody></table>
+</section>
+
+<section id="us04" class="screen">
+<div class="head"><div><h1>4. Application Review</h1><div class="muted">Loan officer gets one place to review relevant applicant, loan and assessment information.</div></div><span class="tag">US-04 · BR-04</span></div>
+<div class="grid">
+<div class="box"><h2>Applicant</h2><label>Application ID</label><input id="reviewId" value="APP-0003" readonly><label style="margin-top:10px">Applicant name</label><input value="Test Borrower 03" readonly><label style="margin-top:10px">Customer ID</label><input value="3" readonly></div>
+<div class="box"><h2>Loan</h2><label>Monthly income</label><input value="60000" readonly><label style="margin-top:10px">Requested amount</label><input value="200000" readonly><label style="margin-top:10px">Term months</label><input value="24" readonly><label style="margin-top:10px">Current status</label><input id="reviewStatus" value="PENDING_REVIEW" readonly></div>
+</div>
+<div class="box"><h2>Assessment summary</h2><div class="grid3"><div class="stat">Rule<b>Standard</b></div><div class="stat">Ratio<b>0.28</b></div><div class="stat">Result<b>ELIGIBLE</b></div></div></div>
+<table><thead><tr><th>Application</th><th>Applicant</th><th>Amount</th><th>Term</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td>APP-0001</td><td>Test Borrower 01</td><td>150000</td><td>24</td><td>PENDING_REVIEW</td><td><button class="btn" onclick="loadReview('APP-0001')">Open</button></td></tr><tr><td>APP-0002</td><td>Test Borrower 02</td><td>250000</td><td>36</td><td>PENDING_REVIEW</td><td><button class="btn" onclick="loadReview('APP-0002')">Open</button></td></tr><tr><td>APP-0003</td><td>Test Borrower 03</td><td>200000</td><td>24</td><td>PENDING_REVIEW</td><td><button class="btn" onclick="loadReview('APP-0003')">Open</button></td></tr></tbody></table>
+<div class="actions"><button class="btn primary" onclick="sendToManager()">Send to Manager Decision</button><button class="btn" onclick="show('us05')">Open Manager Report</button></div>
+</section>
+
+<section id="us05" class="screen">
+<div class="head"><div><h1>5. Pending Decision Report</h1><div class="muted">Loan manager sees applications that require a decision.</div></div><span class="tag">US-05 · BR-05</span></div>
+<div class="grid3"><div class="stat">Pending manager decisions<b id="pendingCount">8</b></div><div class="stat">Approved<b>8</b></div><div class="stat">Rejected<b>9</b></div></div>
+<div class="box" style="margin-top:14px"><h2>Applications requiring decision</h2><table><thead><tr><th>Application</th><th>Applicant</th><th>Amount</th><th>Assessment</th><th>Status</th><th>Action</th></tr></thead><tbody id="managerRows"><tr><td>APP-0010</td><td>Test Borrower 04</td><td>300000</td><td>ELIGIBLE</td><td>PENDING_MANAGER_REVIEW</td><td><button class="btn" onclick="managerDecision('APP-0010')">Open</button></td></tr><tr><td>APP-0011</td><td>Test Borrower 05</td><td>450000</td><td>ELIGIBLE</td><td>PENDING_MANAGER_REVIEW</td><td><button class="btn" onclick="managerDecision('APP-0011')">Open</button></td></tr><tr><td>APP-0012</td><td>Test Borrower 06</td><td>180000</td><td>ELIGIBLE</td><td>PENDING_MANAGER_REVIEW</td><td><button class="btn" onclick="managerDecision('APP-0012')">Open</button></td></tr><tr><td>APP-0013</td><td>Test Borrower 07</td><td>220000</td><td>NOT_ELIGIBLE</td><td>PENDING_MANAGER_REVIEW</td><td><button class="btn" onclick="managerDecision('APP-0013')">Open</button></td></tr></tbody></table></div>
+<div class="chart">Bar chart: applications by current status</div>
+<div class="actions"><button class="btn primary" onclick="managerDecision('APP-0010')">Open decision</button><button class="btn" onclick="show('us06')">Go to disbursement</button></div>
+</section>
+
+<section id="us06" class="screen final">
+<div class="head"><div><h1>6. Disbursement Update</h1><div class="muted">Final scope: record whether an approved loan has been disbursed and when.</div></div><div><span class="finaltag">Final scope</span> <span class="tag">US-06 · BR-06</span></div></div>
+<div class="box"><div class="grid"><div><label>Application ID</label><input id="disbId" value="APP-0015"></div><div><label>Approved amount</label><input id="approvedAmount" type="number" value="250000"></div><div><label>Disbursement status</label><select id="disbStatus"><option>PENDING</option><option>DISBURSED</option><option>NOT_DISBURSED</option></select></div><div><label>Disbursement date</label><input id="disbDate" type="date" value="2026-10-08"></div></div><div class="actions"><button class="btn primary" onclick="recordDisbursement()">Record disbursement</button></div></div>
+<table><thead><tr><th>Application</th><th>Approved amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="disbRows"><tr><td>APP-0015</td><td>250000</td><td>PENDING</td><td>—</td></tr><tr><td>APP-0016</td><td>180000</td><td>DISBURSED</td><td>2026-10-06</td></tr><tr><td>APP-0018</td><td>300000</td><td>NOT_DISBURSED</td><td>—</td></tr></tbody></table>
+</section>
+
+<section id="us07" class="screen final">
+<div class="head"><div><h1>7. Notifications / Updates</h1><div class="muted">Final scope: show important application status and repayment-related updates.</div></div><div><span class="finaltag">Final scope</span> <span class="tag">US-07 · BR-07</span></div></div>
+<div class="grid3"><div class="stat">Unread updates<b id="unreadCount">2</b></div><div class="stat">Application updates<b>25</b></div><div class="stat">Repayment updates<b>5</b></div></div>
+<div class="box" style="margin-top:14px"><table><thead><tr><th>Date</th><th>Application</th><th>Old status</th><th>New status</th><th>Message</th><th>Read</th></tr></thead><tbody id="notificationRows"><tr><td>2026-10-08</td><td>APP-0016</td><td>PENDING_MANAGER_REVIEW</td><td>APPROVED</td><td>Application status changed.</td><td>No</td></tr><tr><td>2026-10-07</td><td>APP-0002</td><td>DRAFT</td><td>PENDING_REVIEW</td><td>Application submitted for review.</td><td>Yes</td></tr><tr><td>2026-10-06</td><td>APP-0007</td><td>PENDING_REVIEW</td><td>REJECTED</td><td>Application status changed.</td><td>Yes</td></tr><tr><td>2026-10-05</td><td>APP-0008</td><td>APPROVED</td><td>DISBURSED</td><td>Loan disbursement recorded.</td><td>No</td></tr></tbody></table></div>
+<div class="actions"><button class="btn primary" onclick="markNotificationsRead()">Mark visible updates as read</button><button class="btn" onclick="show('us02')">View application status</button></div>
+</section>
+
+<section id="us08" class="screen final">
+<div class="head"><div><h1>8. Application Validation</h1><div class="muted">Final scope: invalid or missing application data is identified before submission.</div></div><div><span class="finaltag">Final scope</span> <span class="tag">US-08 · BR-08</span></div></div>
+<div class="box"><div class="grid"><div><label>Applicant name *</label><input id="vName" value="Test Borrower 01"></div><div><label>Monthly income *</label><input id="vIncome" value="abc"></div><div><label>Requested loan amount *</label><input id="vAmount" value=""></div><div><label>Term months *</label><input id="vTerm" value="24"></div></div><div id="validationMessage" class="note">Click Validate to check the fields.</div><div class="actions"><button class="btn primary" onclick="validateApplication()">Validate application</button><button class="btn" onclick="copyValidData()">Load valid demo data</button></div></div>
+<table><thead><tr><th>Field</th><th>Value</th><th>Validation result</th></tr></thead><tbody id="validationRows"><tr><td>monthly_income</td><td>abc</td><td>Not checked</td></tr><tr><td>requested_amount</td><td>—</td><td>Not checked</td></tr><tr><td>term_months</td><td>24</td><td>Not checked</td></tr></tbody></table>
+</section>
+
+<section id="us09" class="screen final">
+<div class="head"><div><h1>9. Role Access</h1><div class="muted">Final scope: a role is allowed or denied access to protected resources.</div></div><div><span class="finaltag">Final scope</span> <span class="tag">US-09 · BR-09</span></div></div>
+<div class="grid"><div class="box"><h2>Access request</h2><label>User role</label><select id="accessRole"><option>CUSTOMER</option><option>LOAN_OFFICER</option><option>LOAN_MANAGER</option></select><label style="margin-top:10px">Resource</label><select id="accessResource"><option>OWN_APPLICATION</option><option>APPLICATION</option><option>ASSESSMENT</option><option>STAFF_REPORT</option><option>PENDING_DECISION_REPORT</option></select><label style="margin-top:10px">Application ID</label><input value="APP-0001"></div><div class="box"><h2>Result</h2><div id="accessResult" class="placeholder">Access result will appear here.</div><div class="actions"><button class="btn primary" onclick="checkAccess()">Check access</button></div></div></div>
+<table><thead><tr><th>Role</th><th>Resource</th><th>Can view</th></tr></thead><tbody><tr><td>CUSTOMER</td><td>OWN_APPLICATION</td><td>TRUE</td></tr><tr><td>CUSTOMER</td><td>STAFF_REPORT</td><td>FALSE</td></tr><tr><td>LOAN_OFFICER</td><td>ASSESSMENT</td><td>TRUE</td></tr><tr><td>LOAN_MANAGER</td><td>PENDING_DECISION_REPORT</td><td>TRUE</td></tr></tbody></table>
+</section>
+
+<section id="us10" class="screen final">
+<div class="head"><div><h1>10. Setup / Reproduction</h1><div class="muted">Final scope: documentation/reproducibility screen. This page itself is HTML/JavaScript only.</div></div><div><span class="finaltag">Final scope</span> <span class="tag">US-10 · BR-10</span></div></div>
+<div class="box"><h2>Project setup checklist</h2><table><thead><tr><th>Step</th><th>Requirement</th><th>Status</th></tr></thead><tbody id="setupRows"><tr><td>1</td><td>Open project from documented location</td><td>Pending</td></tr><tr><td>2</td><td>Install documented dependencies for final application</td><td>Pending</td></tr><tr><td>3</td><td>Start application using README instructions</td><td>Pending</td></tr><tr><td>4</td><td>Run documented test suite</td><td>Pending</td></tr></tbody></table></div>
+<div class="box"><h2>Reproduction output</h2><div id="setupOutput" class="placeholder">Click “Run setup check” to simulate the documented reproducibility check.</div><div class="actions"><button class="btn primary" onclick="runSetup()">Run setup check</button><button class="btn" onclick="runTests()">Run tests</button></div></div>
+</section>
+</main>
+<div id="toast" class="toast"></div>
+<script>
+let app={id:'APP-0003',name:'Test Borrower 03',customerId:'3',income:60000,amount:200000,term:24,status:'PENDING_REVIEW',assessment:null};
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));let el=document.getElementById(id);if(el){el.classList.add('active');window.scrollTo(0,0)}}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>t.style.display='none',2200)}
+function login(){let role=document.getElementById('loginRole').value;document.getElementById('roleText').textContent=role;toast('Logged in as '+role);if(role==='CUSTOMER')show('us01');else if(role==='LOAN_OFFICER')show('us04');else show('us05')}
+function submitApplication(){let name=document.getElementById('appName').value.trim(),cid=document.getElementById('customerId').value.trim(),income=Number(document.getElementById('income').value),amount=Number(document.getElementById('amount').value),term=Number(document.getElementById('term').value);if(!name||!cid||!income||income<=0||!amount||amount<=0||!term){toast('Validation failed: complete required fields');show('us08');return}app={id:'APP-0014',name,customerId:cid,income,amount,term,status:'PENDING_REVIEW',assessment:null};document.getElementById('createdApp').innerHTML='<b>'+app.id+'</b> created with status <span class="status">PENDING_REVIEW</span>';syncStatus();toast(app.id+' submitted for review');show('us02')}
+function resetApplication(){document.getElementById('appName').value='Test Borrower 13';document.getElementById('customerId').value='13';document.getElementById('income').value='60000';document.getElementById('amount').value='200000';document.getElementById('term').value='24';document.getElementById('purpose').value='Education'}
+function syncStatus(){document.getElementById('statusAppId').textContent=app.id;document.getElementById('statusValue').textContent=app.status;document.getElementById('statusAmount').textContent='₹'+app.amount;document.getElementById('timeline').innerHTML='<div>Application saved → <b>DRAFT</b></div><div>Submitted for review → <b>'+app.status+'</b></div>'}
+function runAssessment(){let income=Number(document.getElementById('assessIncome').value),amount=Number(document.getElementById('assessAmount').value),term=Number(document.getElementById('assessTerm').value),rule=document.getElementById('rule').value;let min=rule==='standard'?30000:50000,max=rule==='standard'?.5:.4,minTerm=12,maxTerm=rule==='standard'?60:48;document.getElementById('minIncome').textContent='₹'+min;document.getElementById('maxRatio').textContent=max.toFixed(2);document.getElementById('termRange').textContent=minTerm+'–'+maxTerm+' months';if(!income||!amount||!term){document.getElementById('assessmentResult').textContent='Invalid input: income, amount and term are required.';return}let ratio=amount/(income*12),eligible=income>=min&&ratio<=max&&term>=minTerm&&term<=maxTerm;app.assessment=eligible?'ELIGIBLE':'NOT_ELIGIBLE';document.getElementById('assessmentResult').innerHTML='Result: <b>'+app.assessment+'</b><br>Calculated loan/income ratio: '+ratio.toFixed(2);document.getElementById('assessId').value=app.id;toast('Assessment completed: '+app.assessment)}
+function loadReview(id){document.getElementById('reviewId').value=id;toast('Loaded '+id+' for review')}
+function sendToManager(){app.status='PENDING_MANAGER_REVIEW';syncStatus();document.getElementById('reviewStatus').value=app.status;toast(app.id+' sent to manager decision queue');show('us05')}
+function managerDecision(id){toast('Opened decision for '+id);show('us06')}
+function recordDisbursement(){let id=document.getElementById('disbId').value,status=document.getElementById('disbStatus').value,date=document.getElementById('disbDate').value||'—',amount=document.getElementById('approvedAmount').value;let rows=document.getElementById('disbRows');rows.innerHTML='<tr><td>'+id+'</td><td>'+amount+'</td><td>'+status+'</td><td>'+date+'</td></tr>'+rows.innerHTML;toast('Disbursement record saved for '+id);addNotification(id,'APPROVED',status,'Loan disbursement status updated.')}
+function addNotification(id,oldStatus,newStatus,msg){let rows=document.getElementById('notificationRows');rows.innerHTML='<tr><td>2026-10-08</td><td>'+id+'</td><td>'+oldStatus+'</td><td>'+newStatus+'</td><td>'+msg+'</td><td>No</td></tr>'+rows.innerHTML;document.getElementById('unreadCount').textContent=Number(document.getElementById('unreadCount').textContent)+1}
+function markNotificationsRead(){document.querySelectorAll('#notificationRows tr').forEach(r=>r.cells[5].textContent='Yes');document.getElementById('unreadCount').textContent='0';toast('Visible notifications marked as read')}
+function validateApplication(){let name=document.getElementById('vName').value.trim(),income=document.getElementById('vIncome').value.trim(),amount=document.getElementById('vAmount').value.trim(),term=document.getElementById('vTerm').value.trim();let checks=[['applicant_name',name,name?'Valid':'Required field missing'],['monthly_income',income,/^\d+(\.\d+)?$/.test(income)&&Number(income)>0?'Valid':'Invalid numeric value'],['requested_amount',amount,/^\d+(\.\d+)?$/.test(amount)&&Number(amount)>0?'Valid':'Required or invalid value'],['term_months',term,/^\d+$/.test(term)&&Number(term)>=12&&Number(term)<=60?'Valid':'Invalid term']];document.getElementById('validationRows').innerHTML=checks.map(x=>'<tr><td>'+x[0]+'</td><td>'+((x[1]||'—'))+'</td><td>'+x[2]+'</td></tr>').join('');let ok=checks.every(x=>x[2]==='Valid');document.getElementById('validationMessage').textContent=ok?'Validation passed: all required fields are valid.':'Validation failed: one or more fields need correction.'}
+function copyValidData(){document.getElementById('vName').value='Test Borrower 01';document.getElementById('vIncome').value='50000';document.getElementById('vAmount').value='150000';document.getElementById('vTerm').value='24';toast('Valid synthetic demo data loaded')}
+function checkAccess(){let role=document.getElementById('accessRole').value,res=document.getElementById('accessResource').value;let allowed=(role==='CUSTOMER'&&res==='OWN_APPLICATION')||(role==='LOAN_OFFICER'&&(res==='APPLICATION'||res==='ASSESSMENT'))||(role==='LOAN_MANAGER'&&(res==='APPLICATION'||res==='PENDING_DECISION_REPORT'));document.getElementById('accessResult').innerHTML='<b>'+ (allowed?'ALLOWED':'DENIED') +'</b><br>Role: '+role+'<br>Resource: '+res;toast(allowed?'Access allowed':'Access denied')}
+function runSetup(){document.querySelectorAll('#setupRows td:last-child').forEach(td=>td.textContent='PASS');document.getElementById('setupOutput').textContent='Setup check simulated: all documented setup steps are present.';toast('Setup check passed')}
+function runTests(){document.getElementById('setupOutput').textContent='Test run simulated: happy-path and invalid-input checks are defined in the project test cases.';toast('Test run completed')}
+</script>
+</body>
+</html>

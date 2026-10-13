@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — New Loan Application{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 960px; margin: 0 auto;">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Apply for a Loan</span>
+            </h1>
+            <div class="muted">Select a loan product and submit your borrowing request for deterministic policy underwriting.</div>
+        </div>
+        <span class="tag">Phase 7 · Product Engine</span>
+    </div>
+
+    <!-- Application Lifecycle Step Indicator -->
+    <div class="steps">
+        <span class="step current">1. Product & Terms</span>
+        <span class="step">2. Officer Assessment</span>
+        <span class="step">3. Manager Review</span>
+        <span class="step">4. Disbursement</span>
+    </div>
+
+    {% if errors %}
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; color: #f87171;">
+            <b style="display: block; margin-bottom: 6px; font-size: 13px;">Please correct the following application issues:</b>
+            <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                {% for field_name, err in errors.items() %}
+                    <li><b>{{ field_name|replace('_', ' ')|title }}:</b> {{ err }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('customer.new_application') }}" id="application-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- 1. Product Selection Box -->
+        <div class="box" style="padding: 24px; margin-bottom: 24px; border-left: 4px solid #3b82f6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h2 style="margin: 0; font-size: 16px;">1. Select Loan Facility</h2>
+                    <span class="muted" style="font-size: 12.5px;">Choose an active loan product matching your credit requirements</span>
+                </div>
+                <a href="{{ url_for('customer.emi_calculator') }}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
+                    <span>EMI Calculator ↗</span>
+                </a>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="product_id">Loan Product *</label>
+                <select id="product_id" name="product_id" onchange="onProductChange()" style="font-size: 14px; font-weight: 600; padding: 10px 14px;">
+                    {% for prod in active_products %}
+                        <option value="{{ prod.product_id }}"
+                                data-code="{{ prod.product_code }}"
+                                data-name="{{ prod.product_name }}"
+                                data-desc="{{ prod.description }}"
+                                data-min-amt="{{ prod.min_amount }}"
+                                data-max-amt="{{ prod.max_amount }}"
+                                data-min-term="{{ prod.min_term_months }}"
+                                data-max-term="{{ prod.max_term_months }}"
+                                data-rate="{{ prod.annual_interest_rate }}"
+                                data-min-income="{{ prod.min_monthly_income }}"
+                                data-max-lti="{{ prod.max_loan_to_income_ratio }}"
+                                {% if form_data.get('product_id')|string == prod.product_id|string %}selected{% endif %}>
+                            {{ prod.product_name }} — {{ prod.annual_interest_rate }}% p.a. (₹{{ "{:,.0f}".format(prod.min_amount) }} to ₹{{ "{:,.0f}".format(prod.max_amount) }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Dynamic Product Overview Banner -->
+            <div id="productOverview" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div>
+                        <span id="prodNameDisplay" style="font-size: 15px; font-weight: 700; color: #ffffff;">Personal Loan</span>
+                        <div id="prodDescDisplay" class="muted" style="font-size: 12.5px; margin-top: 3px;">
+                            Unsecured multi-purpose personal credit for immediate liquidity and general financing.
+                        </div>
+                    </div>
+                    <span id="prodRateBadge" style="font-size: 16px; font-weight: 800; color: #38bdf8; font-family: var(--font-mono); background: rgba(56, 189, 248, 0.12); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                        11.5% p.a.
+                    </span>
+                </div>
+
+                <div class="grid4" style="margin-top: 14px; gap: 12px;">
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                        <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Allowed Principal</span>
+                        <div id="prodAmtRange" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                            ₹10,000 – ₹500,000
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                        <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Permitted Tenure</span>
+                        <div id="prodTenureRange" style="font-size: 12.5px; font-weight: 600; color: #ffffff; margin-top: 2px;">
+                            12 – 60 months
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                        <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Min Monthly Income</span>
+                        <div id="prodMinIncome" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                            ₹25,000 / mo
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                        <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Max Loan-to-Income</span>
+                        <div id="prodMaxLti" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                            0.50x annual income
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Application Inputs & Financial Details -->
+        <div class="box" style="padding: 24px; margin-bottom: 24px;">
+            <h2 style="font-size: 16px; margin: 0 0 6px;">2. Loan Amount & Applicant Details</h2>
+            <p class="muted" style="margin-bottom: 20px; font-size: 12.5px;">Specify your borrowing request parameters and income profile.</p>
+
+            <div class="grid" style="gap: 20px;">
+                <div>
+                    <label for="applicant_name">Applicant Full Name *</label>
+                    <input id="applicant_name" name="applicant_name" value="{{ form_data.get('applicant_name', '') }}" placeholder="e.g. Test Borrower" required>
+                    {% if 'applicant_name' in errors %}
+                        <div class="field-error"><span>{{ errors['applicant_name'] }}</span></div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label>Borrower Profile</label>
+                    <input value="{{ current_user.user_id }} ({{ current_user.full_name }})" readonly style="background: var(--bg-muted); font-weight: 500;">
+                </div>
+
+                <div>
+                    <label for="requested_amount">Requested Loan Amount (₹) *</label>
+                    <input id="requested_amount" name="requested_amount" type="number" step="any" value="{{ form_data.get('requested_amount', form_data.get('loan_amount', '200000')) }}" placeholder="e.g. 200000" required oninput="updateLiveEmiPreview()">
+                    {% if 'requested_amount' in errors or 'loan_amount' in errors %}
+                        <div class="field-error"><span>{{ errors.get('requested_amount') or errors.get('loan_amount') }}</span></div>
+                    {% else %}
+                        <div class="muted" style="font-size: 11.5px; margin-top: 4px;">Must fall within the selected product amount limits.</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="term_months">Repayment Term (months) *</label>
+                    <input id="term_months" name="term_months" type="number" min="1" max="180" value="{{ form_data.get('term_months', '24') }}" placeholder="24" required oninput="updateLiveEmiPreview()">
+                    {% if 'term_months' in errors %}
+                        <div class="field-error"><span>{{ errors['term_months'] }}</span></div>
+                    {% else %}
+                        <div class="muted" style="font-size: 11.5px; margin-top: 4px;">Must fall within the selected product tenure limits.</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="monthly_income">Monthly Income (₹) *</label>
+                    <input id="monthly_income" name="monthly_income" type="number" step="any" value="{{ form_data.get('monthly_income', '') }}" placeholder="e.g. 60000" required>
+                    {% if 'monthly_income' in errors %}
+                        <div class="field-error"><span>{{ errors['monthly_income'] }}</span></div>
+                    {% else %}
+                        <div class="muted" style="font-size: 11.5px; margin-top: 4px;">Verified gross monthly income before deductions.</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="existing_obligations">Existing Monthly Obligations (₹)</label>
+                    <input id="existing_obligations" name="existing_obligations" type="number" step="any" value="{{ form_data.get('existing_obligations', '0') }}" placeholder="e.g. 5000">
+                    {% if 'existing_obligations' in errors %}
+                        <div class="field-error"><span>{{ errors['existing_obligations'] }}</span></div>
+                    {% else %}
+                        <div class="muted" style="font-size: 11.5px; margin-top: 4px;">Existing monthly loan EMIs, rent, or recurring credit obligations.</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="loan_purpose">Loan Purpose Category *</label>
+                    <select id="loan_purpose" name="loan_purpose" onchange="togglePurposeOther(this.value)">
+                        {% set curr_p = form_data.get('loan_purpose', 'PERSONAL') %}
+                        <option value="PERSONAL" {% if curr_p == 'PERSONAL' %}selected{% endif %}>Personal Expenses</option>
+                        <option value="EDUCATION" {% if curr_p == 'EDUCATION' %}selected{% endif %}>Higher Education</option>
+                        <option value="MEDICAL" {% if curr_p == 'MEDICAL' %}selected{% endif %}>Medical / Healthcare</option>
+                        <option value="HOME_IMPROVEMENT" {% if curr_p == 'HOME_IMPROVEMENT' %}selected{% endif %}>Home Improvement & Renovation</option>
+                        <option value="BUSINESS" {% if curr_p == 'BUSINESS' %}selected{% endif %}>Small Business Expansion</option>
+                        <option value="OTHER" {% if curr_p == 'OTHER' %}selected{% endif %}>Other Purpose</option>
+                    </select>
+                </div>
+
+                <div id="purpose-other-container" style="{% if form_data.get('loan_purpose') != 'OTHER' %}display: none;{% endif %}">
+                    <label for="loan_purpose_other">Specify Other Purpose</label>
+                    <input id="loan_purpose_other" name="loan_purpose_other" value="{{ form_data.get('loan_purpose_other', '') }}" placeholder="Describe the purpose of this loan">
+                </div>
+
+                <div>
+                    <label for="employment_type">Employment Classification</label>
+                    <select id="employment_type" name="employment_type">
+                        {% set curr_emp = form_data.get('employment_type', 'SALARIED') %}
+                        <option value="SALARIED" {% if curr_emp == 'SALARIED' %}selected{% endif %}>Salaried Professional</option>
+                        <option value="SELF_EMPLOYED" {% if curr_emp == 'SELF_EMPLOYED' %}selected{% endif %}>Self-Employed / Freelancer</option>
+                        <option value="BUSINESS_OWNER" {% if curr_emp == 'BUSINESS_OWNER' %}selected{% endif %}>Business Owner / Enterprise</option>
+                        <option value="OTHER" {% if curr_emp == 'OTHER' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="employer_name">Employer / Business Name</label>
+                    <input id="employer_name" name="employer_name" value="{{ form_data.get('employer_name', '') }}" placeholder="e.g. Acme Corp or Consulting Firm">
+                </div>
+
+                <div>
+                    <label for="preferred_repayment_date">Preferred Repayment Day (Monthly)</label>
+                    <select id="preferred_repayment_date" name="preferred_repayment_date">
+                        {% set curr_day = form_data.get('preferred_repayment_date', '5')|string %}
+                        {% for day in [1, 5, 10, 15, 20, 25] %}
+                            <option value="{{ day }}" {% if curr_day == day|string %}selected{% endif %}>Day {{ day }} of each month</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Dynamic Live EMI Calculation Card -->
+        <div class="box" style="padding: 24px; margin-bottom: 24px; background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.95) 100%); border-color: rgba(59, 130, 246, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <div>
+                    <h2 style="font-size: 15px; margin: 0; color: #ffffff;">Estimated Monthly Installment (EMI)</h2>
+                    <span class="muted" style="font-size: 12px;">Real-time reducing-balance amortization preview</span>
+                </div>
+                <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                    Indicative Estimate
+                </span>
+            </div>
+
+            <div class="grid3" style="gap: 16px;">
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
+                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Monthly EMI</span>
+                    <div style="font-size: 24px; font-weight: 800; color: #38bdf8; font-family: var(--font-mono); margin-top: 4px;">
+                        ₹<span id="previewEmi">9,368.62</span>
+                    </div>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
+                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Total Interest</span>
+                    <div style="font-size: 18px; font-weight: 700; color: #ffffff; font-family: var(--font-mono); margin-top: 8px;">
+                        ₹<span id="previewInterest">24,846.88</span>
+                    </div>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
+                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Total Repayment Obligation</span>
+                    <div style="font-size: 18px; font-weight: 700; color: #34d399; font-family: var(--font-mono); margin-top: 8px;">
+                        ₹<span id="previewPayable">224,846.88</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="muted" style="font-size: 11px; margin-top: 12px;">
+                * Calculated using standard formula: <code>EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ - 1)</code>. Final approved repayment schedule will be determined during officer underwriting.
+            </div>
+        </div>
+
+        {% if draft_id %}
+            <input type="hidden" name="draft_id" value="{{ draft_id }}">
+        {% endif %}
+
+        <div class="actions" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="{{ url_for('customer.dashboard') }}" class="btn" style="padding: 10px 20px;">Cancel</a>
+            <button type="submit" name="action" value="draft" class="btn" style="padding: 10px 18px; border-color: rgba(148, 163, 184, 0.4);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <span>Save as Draft</span>
+            </button>
+            <button type="submit" name="action" value="preview" class="btn primary" style="padding: 10px 24px; font-weight: 700;">
+                <span>Review Application Summary →</span>
+            </button>
+            <button type="submit" name="action" value="submit" class="btn" style="padding: 10px 18px;">
+                <span>Submit Application</span>
+            </button>
+        </div>
+    </form>
+</section>
+
+<script>
+function onProductChange() {
+    const sel = document.getElementById('product_id');
+    if (!sel || !sel.selectedOptions.length) return;
+    const opt = sel.selectedOptions[0];
+
+    const name = opt.getAttribute('data-name');
+    const desc = opt.getAttribute('data-desc');
+    const minAmt = parseFloat(opt.getAttribute('data-min-amt'));
+    const maxAmt = parseFloat(opt.getAttribute('data-max-amt'));
+    const minTerm = parseInt(opt.getAttribute('data-min-term'), 10);
+    const maxTerm = parseInt(opt.getAttribute('data-max-term'), 10);
+    const rate = parseFloat(opt.getAttribute('data-rate'));
+    const minInc = parseFloat(opt.getAttribute('data-min-income'));
+    const maxLti = parseFloat(opt.getAttribute('data-max-lti'));
+
+    document.getElementById('prodNameDisplay').textContent = name;
+    document.getElementById('prodDescDisplay').textContent = desc || 'Configured lending facility for applicant financing.';
+    document.getElementById('prodRateBadge').textContent = rate.toFixed(2) + '% p.a.';
+    document.getElementById('prodAmtRange').textContent = '₹' + minAmt.toLocaleString('en-IN') + ' – ₹' + maxAmt.toLocaleString('en-IN');
+    document.getElementById('prodTenureRange').textContent = minTerm + ' – ' + maxTerm + ' months';
+    document.getElementById('prodMinIncome').textContent = '₹' + minInc.toLocaleString('en-IN') + ' / mo';
+    document.getElementById('prodMaxLti').textContent = maxLti.toFixed(2) + 'x annual income';
+
+    updateLiveEmiPreview();
+}
+
+function updateLiveEmiPreview() {
+    const sel = document.getElementById('product_id');
+    let rate = 11.5;
+    if (sel && sel.selectedOptions.length) {
+        rate = parseFloat(sel.selectedOptions[0].getAttribute('data-rate')) || 11.5;
+    }
+
+    const P = parseFloat(document.getElementById('requested_amount').value) || 0;
+    const n = parseInt(document.getElementById('term_months').value, 10) || 0;
+
+    if (P <= 0 || n <= 0) {
+        document.getElementById('previewEmi').textContent = '0.00';
+        document.getElementById('previewInterest').textContent = '0.00';
+        document.getElementById('previewPayable').textContent = '0.00';
+        return;
+    }
+
+    let emi = 0;
+    let totalPayable = 0;
+    let totalInterest = 0;
+
+    if (rate === 0) {
+        emi = P / n;
+        totalPayable = P;
+        totalInterest = 0;
+    } else {
+        const r = (rate / 100) / 12;
+        const factor = Math.pow(1 + r, n);
+        emi = (P * r * factor) / (factor - 1);
+        totalPayable = emi * n;
+        totalInterest = totalPayable - P;
+    }
+
+    document.getElementById('previewEmi').textContent = emi.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('previewInterest').textContent = totalInterest.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('previewPayable').textContent = totalPayable.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function togglePurposeOther(val) {
+    const el = document.getElementById('purpose-other-container');
+    if (el) {
+        el.style.display = (val === 'OTHER') ? 'block' : 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    onProductChange();
+});
+</script>
+{% endblock %}

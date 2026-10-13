@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Customer Sign In{% endblock %}
+{% block meta_description %}Sign in to your LoanPulse customer account to apply for personal or business loans, upload documents, and track your application status.{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 500px; margin: 30px auto; padding: 36px 32px;">
+    <div style="text-align: center; margin-bottom: 28px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #6366f1); color: white; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 800; color: #ffffff; margin: 0 0 8px; letter-spacing: -0.02em;">Welcome back</h1>
+        <p class="muted" style="margin: 0; font-size: 14px;">Sign in to manage your LoanPulse account.</p>
+    </div>
+
+    <div class="box" style="padding: 28px; background: var(--bg-card); border-color: var(--border-color);">
+        <form method="POST" action="{{ url_for('auth.login_user_view', demo_role=demo_role) }}" id="login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 18px;">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" value="{{ request.form.get('email', '') }}" placeholder="name@example.com" required autofocus>
+            </div>
+
+            <div style="margin-bottom: 22px;">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="actions" style="margin-top: 10px;">
+                <button type="submit" class="btn primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; justify-content: center;">
+                    <span>Sign In</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <span class="muted" style="font-size: 13px;">Don't have an account? </span>
+                <a href="{{ url_for('auth.signup') }}" style="font-weight: 600; font-size: 13px;">Sign up</a>
+            </div>
+        </form>
+
+        <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('auth.login') }}" class="muted" style="font-size: 12.5px;">
+                ← Change account type
+            </a>
+            <a href="{{ url_for('auth.login_admin_view') }}" class="muted" style="font-size: 12.5px;">
+                Administration login →
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

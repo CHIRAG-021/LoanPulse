@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Officer KYC Review Workspace{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <span>KYC Verification Workspace</span>
+            </h1>
+            <div class="muted">Review customer identification documents, verify authenticity, and approve KYC credentials.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh KYC queue">
+                <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+            </button>
+            <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
+                <span>Loan Queue →</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KYC Metrics Banner -->
+    <div class="grid4" style="margin-bottom: 26px;">
+        <div class="stat">
+            <span>Total Customers</span>
+            <b style="color: #ffffff;">{{ total_customers }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 6px;">Registered customer base</div>
+        </div>
+        <div class="stat">
+            <span>Pending Review</span>
+            <b style="color: #fbbf24;">{{ pending_kyc_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 6px;">Awaiting officer decision</div>
+        </div>
+        <div class="stat">
+            <span>Verified Customers</span>
+            <b style="color: #34d399;">{{ verified_kyc_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 6px;">Credentials approved</div>
+        </div>
+        <div class="stat">
+            <span>Rejected KYCs</span>
+            <b style="color: #f87171;">{{ rejected_kyc_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 6px;">Action required by user</div>
+        </div>
+    </div>
+
+    <!-- Customer Queue Table -->
+    <div class="box" style="padding: 0; overflow: hidden;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
+            <div>
+                <h2 style="margin: 0; font-size: 16px;">Customer Verification Queue</h2>
+                <span class="muted" style="font-size: 12px;">Customers prioritized by verification status</span>
+            </div>
+            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                {{ customers|length }} Customers
+            </span>
+        </div>
+
+        {% if customers %}
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Email</th>
+                            <th>Profile</th>
+                            <th>Documents</th>
+                            <th>KYC Status</th>
+                            <th style="text-align: right;">Review Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in customers %}
+                            <tr style="{% if c.kyc_status == 'PENDING' %}background: rgba(245, 158, 11, 0.04);{% endif %}">
+                                <td>
+                                    <div style="font-weight: 600; color: #ffffff;">{{ c.full_name }}</div>
+                                    <div class="muted" style="font-size: 11px; font-family: var(--font-mono);">ID: #{{ c.user_id }}</div>
+                                </td>
+                                <td class="muted" style="font-size: 12.5px;">{{ c.email }}</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 50px; height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden;">
+                                            <div style="width: {{ c.profile_completion_percentage }}%; height: 100%; background: {% if c.profile_completion_percentage >= 80 %}#10b981{% elif c.profile_completion_percentage >= 50 %}#f59e0b{% else %}#3b82f6{% endif %};"></div>
+                                        </div>
+                                        <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">{{ c.profile_completion_percentage }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="tag" style="font-size: 11px;">
+                                        {{ c.documents|length }} files
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if c.kyc_status == 'VERIFIED' %}
+                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">✓ VERIFIED</span>
+                                    {% elif c.kyc_status == 'PENDING' %}
+                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">⏳ PENDING</span>
+                                    {% elif c.kyc_status == 'REJECTED' %}
+                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">✕ REJECTED</span>
+                                    {% else %}
+                                        <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700; font-size: 11px;">NOT STARTED</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{{ url_for('officer.kyc_review', customer_id=c.user_id) }}" class="btn {% if c.kyc_status == 'PENDING' %}primary{% endif %}" style="padding: 5px 14px; font-size: 12px;">
+                                        <span>Review KYC</span>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="placeholder" style="padding: 48px 24px;">
+                <p class="muted">No customers found in database.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

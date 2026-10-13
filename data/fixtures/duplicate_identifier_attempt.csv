@@ -1,0 +1,2 @@
+case_type,application_id,description,expected
+duplicate_primary_key,APP-0001,Attempted duplicate application ID,Insert should be rejected by PK rule

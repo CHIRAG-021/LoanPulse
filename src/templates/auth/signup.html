@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Customer Sign Up{% endblock %}
+{% block meta_description %}Create a LoanPulse customer account to explore loan products, submit transparent applications, and receive fast, rule-based loan evaluations.{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 580px; margin: 30px auto; padding: 36px 32px;">
+    <div style="text-align: center; margin-bottom: 28px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #6366f1); color: white; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 800; color: #ffffff; margin: 0 0 8px; letter-spacing: -0.02em;">Create Customer Account</h1>
+        <p class="muted" style="margin: 0; font-size: 14px;">Create your LoanPulse account to apply for and track your loans.</p>
+    </div>
+
+    <div class="box" style="padding: 28px; background: var(--bg-card); border-color: var(--border-color);">
+        <form method="POST" action="{{ url_for('auth.signup') }}" id="signup-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 18px;">
+                <label for="full_name">Full Name *</label>
+                <input type="text" id="full_name" name="full_name" value="{{ form_data.get('full_name', '') }}" placeholder="e.g. Test Borrower" required autofocus>
+                {% if 'full_name' in errors %}
+                    <div class="field-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>{{ errors['full_name'] }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" value="{{ form_data.get('email', '') }}" placeholder="e.g. borrower@example.test" required>
+                {% if 'email' in errors %}
+                    <div class="field-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>{{ errors['email'] }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label for="password" style="margin: 0;">Password *</label>
+                    <span class="muted" style="font-size: 11px;">Minimum 6 characters</span>
+                </div>
+                <input type="password" id="password" name="password" placeholder="Create a secure password" required>
+                {% if 'password' in errors %}
+                    <div class="field-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>{{ errors['password'] }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 22px;">
+                <label for="confirm_password">Confirm Password *</label>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+                {% if 'confirm_password' in errors %}
+                    <div class="field-error">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>{{ errors['confirm_password'] }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="actions" style="margin-top: 10px;">
+                <button type="submit" class="btn primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; justify-content: center;">
+                    <span>Create Customer Account</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </div>
+        </form>
+
+        <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-subtle); text-align: center;">
+            <span class="muted" style="font-size: 13px;">Already have an account? </span>
+            <a href="{{ url_for('auth.login') }}" style="font-weight: 600; font-size: 13px;">Sign in</a>
+        </div>
+    </div>
+
+    <div class="note" style="margin-top: 20px; font-size: 12px; text-align: center;">
+        Public registration creates accounts with <b>CUSTOMER</b> permissions only. Loan Officer and Manager credentials are provisioned by internal administration.
+    </div>
+</section>
+{% endblock %}

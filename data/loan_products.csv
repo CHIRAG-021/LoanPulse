@@ -1,0 +1,6 @@
+product_id,product_name,product_code,description,min_amount,max_amount,min_term_months,max_term_months,annual_interest_rate,min_monthly_income,max_loan_to_income_ratio,active
+1,Personal Loan,PERSONAL,"Unsecured multi-purpose personal credit for immediate liquidity and general financing.",10000.0,500000.0,12,60,11.5,25000.0,0.5,True
+2,Education Loan,EDUCATION,"Financing for higher education, university tuition fees, and academic credentials.",50000.0,2000000.0,12,84,8.75,20000.0,0.6,True
+3,Medical Loan,MEDICAL,"Emergency healthcare financing for unexpected medical procedures and clinical treatments.",15000.0,750000.0,6,48,9.5,20000.0,0.55,True
+4,Business Loan,BUSINESS,"Working capital, inventory expansion, and commercial equipment acquisition for enterprises.",100000.0,5000000.0,12,120,13.0,50000.0,0.45,True
+5,Home Improvement Loan,HOME_IMPROVEMENT,"Refurbishment, interior remodeling, structural renovation, and sustainable energy upgrades.",50000.0,1500000.0,12,84,10.0,35000.0,0.5,True

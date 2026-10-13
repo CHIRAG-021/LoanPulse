@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Sign In{% endblock %}
+{% block meta_description %}Sign in to LoanPulse to access your loan management console, submit or review applications, and track real-time lending workflows.{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 1040px; margin: 20px auto; padding: 32px 36px;">
+    <div class="head">
+        <div>
+            <h1>
+                <span class="brand-icon-svg" style="width: 28px; height: 28px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </span>
+                <span>LoanPulse</span>
+            </h1>
+            <div class="muted">SaaS loan application and credit operations — Sign in to your console</div>
+        </div>
+        <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">SECURE GATEWAY</span>
+    </div>
+
+    <div class="grid" style="align-items: stretch; gap: 28px;">
+        <!-- Left Column: Form & Role Selection -->
+        <div class="box" style="padding: 28px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2>Sign In</h2>
+                <p class="muted" style="margin-bottom: 20px;">Enter your credentials to access your role-based workspace.</p>
+
+                {% if selected_role %}
+                    <div style="margin-bottom: 20px; padding: 10px 14px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 12.5px; color: #93c5fd;">Active Role Context:</span>
+                        <span class="role-pill role-pill-{{ selected_role }}">{{ selected_role }}</span>
+                    </div>
+                {% endif %}
+
+                {% if demo_role %}
+                    <div class="alert alert-info" style="margin-bottom: 18px; font-size: 13px;">
+                        <span>Isolated demo session active for: <b>{{ demo_role }}</b></span>
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('auth.login', demo_role=demo_role, role=selected_role) }}" id="login-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div style="margin-bottom: 18px;">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" value="{{ request.form.get('email', 'officer01@example.test' if selected_role == 'LOAN_OFFICER' else ('manager01@example.test' if selected_role == 'LOAN_MANAGER' else 'borrower01@example.test')) }}" placeholder="e.g. borrower01@example.test" required autofocus>
+                    </div>
+
+                    <div style="margin-bottom: 22px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label for="password" style="margin: 0;">Password *</label>
+                            <span class="muted" style="font-size: 11px;">Default: <code>demo123</code></span>
+                        </div>
+                        <input type="password" id="password" name="password" value="demo123" placeholder="Enter password" required>
+                    </div>
+
+                    <div class="actions" style="margin-top: 10px;">
+                        <button type="submit" class="btn primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; justify-content: center;">
+                            <span>Sign In / Login</span>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 18px; text-align: center;">
+                        <span class="muted" style="font-size: 13px;">Don't have an account? </span>
+                        <a href="{{ url_for('auth.signup') }}" style="font-weight: 600; font-size: 13px;">Sign up</a>
+                    </div>
+                </form>
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                <a href="{{ url_for('auth.select_role') }}" class="muted" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>Change selected role</span>
+                </a>
+                <span class="muted" style="font-size: 11.5px;">LoanPulse v1.0 SaaS</span>
+            </div>
+        </div>
+
+        <!-- Right Column: Demo Persona Quick Access & Multi-Tab Isolation -->
+        <div class="box" style="padding: 28px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2>Quick Demo Sign In</h2>
+                <p class="muted" style="margin-bottom: 18px;">Click any demo persona to automatically populate credentials:</p>
+                
+                <div style="display: grid; gap: 12px;">
+                    <button type="button" class="btn" onclick="setDemo('borrower01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #60a5fa; font-weight: 700; letter-spacing: 0.04em;">Customer / Borrower</div>
+                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">borrower01@example.test</div>
+                        </div>
+                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
+                    </button>
+
+                    <button type="button" class="btn" onclick="setDemo('officer01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #34d399; font-weight: 700; letter-spacing: 0.04em;">Loan Officer</div>
+                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">officer01@example.test</div>
+                        </div>
+                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
+                    </button>
+
+                    <button type="button" class="btn" onclick="setDemo('manager01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #c084fc; font-weight: 700; letter-spacing: 0.04em;">Loan Manager</div>
+                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">manager01@example.test</div>
+                        </div>
+                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 18px;">
+                <div class="muted" style="margin-bottom: 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
+                    Multi-Tab Demo Isolation:
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="{{ url_for('customer.dashboard', demo_role='CUSTOMER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Customer Tab ↗</a>
+                    <a href="{{ url_for('officer.queue', demo_role='LOAN_OFFICER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Officer Tab ↗</a>
+                    <a href="{{ url_for('manager.queue', demo_role='LOAN_MANAGER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Manager Tab ↗</a>
+                </div>
+                <div class="note" style="margin-top: 16px; margin-bottom: 0; font-size: 12px; padding: 10px 14px;">
+                    Synthetic test accounts. Concurrent browser tabs use isolated session scoping.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function setDemo(email, password) {
+    document.getElementById('email').value = email;
+    document.getElementById('password').value = password;
+}
+</script>
+{% endblock %}

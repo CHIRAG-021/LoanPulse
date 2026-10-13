@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Administration Sign In{% endblock %}
+{% block meta_description %}Secure administration login for authorized Loan Officers and Loan Managers to evaluate credit risk, manage queues, and process disbursements.{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 500px; margin: 30px auto; padding: 36px 32px;">
+    <div style="text-align: center; margin-bottom: 28px;">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 800; color: #ffffff; margin: 0 0 8px; letter-spacing: -0.02em;">Administration Login</h1>
+        <p class="muted" style="margin: 0; font-size: 14px;">Secure access for authorized Loan Officers and Loan Managers.</p>
+    </div>
+
+    <div class="box" style="padding: 28px; background: var(--bg-card); border-color: var(--border-color);">
+        <form method="POST" action="{{ url_for('auth.login_admin_view', demo_role=demo_role) }}" id="login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 18px;">
+                <label for="email">Staff Email Address *</label>
+                <input type="email" id="email" name="email" value="{{ request.form.get('email', '') }}" placeholder="staff@loanpulse.internal" required autofocus>
+            </div>
+
+            <div style="margin-bottom: 22px;">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" placeholder="Enter password" required>
+            </div>
+
+            <div class="actions" style="margin-top: 10px;">
+                <button type="submit" class="btn primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; justify-content: center;">
+                    <span>Sign In</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </div>
+        </form>
+
+        <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('auth.login_user_view') }}" class="muted" style="font-size: 12.5px;">
+                ← Return to User Login
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="muted" style="font-size: 12.5px;">
+                Portal selection
+            </a>
+        </div>
+    </div>
+
+    <div class="note" style="margin-top: 20px; font-size: 12px; text-align: center; background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); color: #d8b4fe;">
+        Restricted to authorized staff accounts. Customer accounts must authenticate through the User Login portal.
+    </div>
+</section>
+{% endblock %}

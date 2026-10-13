@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Disbursement Tracking{% endblock %}
+
+{% block content %}
+<section class="screen">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                <span>Disbursement Workspace</span>
+            </h1>
+            <div class="muted">Track execution and record fund disbursement dates for credit-approved loans.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh disbursements">
+                <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                <span>Refresh</span>
+            </button>
+            <span class="tag" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Fund Release Operations</span>
+        </div>
+    </div>
+
+    <!-- Summary Metrics for Disbursements -->
+    <div class="grid3" style="margin-bottom: 24px;">
+        <div class="stat">
+            <span>Approved Applications</span>
+            <b style="color: #ffffff;">{{ applications|length }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">Total approved portfolio</div>
+        </div>
+        <div class="stat">
+            <span>Disbursed Loans</span>
+            <b style="color: #34d399;">{{ applications|selectattr('disbursement_status', 'equalto', 'DISBURSED')|list|length }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">Funds executed and released</div>
+        </div>
+        <div class="stat">
+            <span>Awaiting Disbursement</span>
+            <b style="color: #fbbf24;">{{ applications|selectattr('disbursement_status', 'equalto', 'NOT_DISBURSED')|list|length }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px; text-transform: none;">Pending fund release</div>
+        </div>
+    </div>
+
+    <!-- Record Disbursement Form Card with REQUIRED DOM IDs -->
+    <div class="box" style="padding: 26px;">
+        <h2>Record Loan Disbursement</h2>
+        <p class="muted" style="margin-bottom: 20px;">Select an approved loan from the portfolio to execute and document fund disbursement.</p>
+
+        <form method="POST" id="disbursement-form" onsubmit="event.preventDefault(); submitDisbursement();">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="grid" style="gap: 18px;">
+                <div>
+                    <label for="selectAppId">Approved Application *</label>
+                    <select id="selectAppId" onchange="updateApprovedAmount(this)" required>
+                        <option value="">-- Select an approved application --</option>
+                        {% for app in applications %}
+                            <option value="{{ app.application_id }}" data-amount="{{ app.approved_amount or app.requested_amount }}" data-status="{{ app.disbursement_status }}">
+                                {{ app.application_id }} — {{ app.applicant_name }} (₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }} - {{ app.disbursement_status }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="approvedAmount">Approved Amount (₹)</label>
+                    <input id="approvedAmount" readonly value="—" style="background: var(--bg-muted); font-weight: 600; font-variant-numeric: tabular-nums; color: #ffffff;">
+                </div>
+                <div>
+                    <label for="disbStatus">Disbursement Status</label>
+                    <input id="disbStatus" readonly value="DISBURSED" style="background: var(--bg-muted); font-weight: 700; color: #34d399;">
+                </div>
+                <div>
+                    <label for="disbDate">Disbursement Date *</label>
+                    <input type="date" id="disbDate" name="disbursement_date" value="{{ today or '2026-10-08' }}" required>
+                </div>
+            </div>
+            <div class="actions" style="margin-top: 22px;">
+                <button type="button" class="btn primary" onclick="submitDisbursement()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Record Disbursement</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Approved Loans Table Card with REQUIRED DOM IDs -->
+    <div class="box" style="margin-top: 24px; padding: 0; overflow: hidden;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
+            <h2 style="margin: 0; font-size: 15px;">Approved Loans Tracking</h2>
+            <span class="muted" style="font-size: 12px;">{{ applications|length }} approved loans</span>
+        </div>
+        {% if applications %}
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Customer</th>
+                            <th>Approved Amount</th>
+                            <th>Approval Status</th>
+                            <th>Disbursement Status</th>
+                            <th>Disbursement Date</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="disbRows">
+                        {% for app in applications %}
+                            <tr>
+                                <td>
+                                    <span style="font-weight: 700; color: #60a5fa; font-family: var(--font-mono); font-size: 13px;">{{ app.application_id }}</span>
+                                </td>
+                                <td>
+                                    <span style="font-weight: 500; color: #ffffff;">{{ app.applicant_name }}</span>
+                                </td>
+                                <td style="font-weight: 600; font-variant-numeric: tabular-nums; color: #ffffff;">₹{{ '{:,.2f}'.format(app.approved_amount or app.requested_amount) }}</td>
+                                <td>
+                                    <span class="status status-{{ app.status }}">{{ app.status }}</span>
+                                </td>
+                                <td>
+                                    <span class="status {% if app.disbursement_status == 'DISBURSED' %}status-APPROVED{% else %}status-DRAFT{% endif %}">
+                                        {{ app.disbursement_status }}
+                                    </span>
+                                </td>
+                                <td class="muted">{{ app.disbursement_date or '—' }}</td>
+                                <td style="text-align: right;">
+                                    {% if app.disbursement_status != 'DISBURSED' %}
+                                        <form method="POST" action="{{ url_for('officer.disburse_loan', application_id=app.application_id) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="disbursement_date" value="{{ today or '2026-10-08' }}">
+                                            <button type="submit" class="btn success" style="padding: 4px 12px; font-size: 11.5px;">Disburse Now</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="tag" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="placeholder" style="padding: 54px 24px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; color: #34d399; margin-bottom: 14px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
+                <h3 style="margin: 0 0 6px; font-size: 17px; color: #ffffff;">No Approved Loans Awaiting Disbursement</h3>
+                <p class="muted" style="margin: 0;">Once loan applications are approved by management, they will appear here for fund release execution.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+function updateApprovedAmount(select) {
+    const opt = select.options[select.selectedIndex];
+    if (opt && opt.dataset.amount) {
+        document.getElementById('approvedAmount').value = '₹' + Number(opt.dataset.amount).toLocaleString('en-IN', {minimumFractionDigits: 2});
+    } else {
+        document.getElementById('approvedAmount').value = '—';
+    }
+}
+
+function submitDisbursement() {
+    const appId = document.getElementById('selectAppId').value;
+    const dateVal = document.getElementById('disbDate').value;
+    if (!appId) {
+        alert('Please select an application to disburse.');
+        return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/officer/applications/' + appId + '/disburse';
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta && csrfMeta.content) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfMeta.content;
+        form.appendChild(csrfInput);
+    }
+    const dateInput = document.createElement('input');
+    dateInput.type = 'hidden';
+    dateInput.name = 'disbursement_date';
+    dateInput.value = dateVal;
+    form.appendChild(dateInput);
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

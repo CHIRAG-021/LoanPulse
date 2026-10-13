@@ -1,0 +1,4 @@
+rule_id,rule_name,min_monthly_income,max_loan_to_income_ratio,min_term_months,max_term_months,result_if_pass,active
+1,Standard Eligibility Rule,30000.0,0.5,12,60,ELIGIBLE,True
+2,Conservative Eligibility Rule,50000.0,0.4,12,48,ELIGIBLE,True
+3,Archived Demo Rule,75000.0,0.3,18,36,ELIGIBLE,False

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}LoanPulse — Officer KYC Review for {{ customer.full_name }}{% endblock %}
+
+{% block content %}
+<section class="screen" style="max-width: 980px; margin: 0 auto;">
+    <div class="head">
+        <div>
+            <h1>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <span>KYC Verification: {{ customer.full_name }}</span>
+            </h1>
+            <div class="muted">Review uploaded customer documents, authenticate borrower identity, and record credit KYC decision.</div>
+        </div>
+        <a href="{{ url_for('officer.kyc_queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
+            <span>← Back to KYC Queue</span>
+        </a>
+    </div>
+
+    <!-- Customer Overview Card -->
+    <div class="box" style="margin-bottom: 24px; padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 18px;">
+            <div>
+                <h2 style="margin: 0 0 4px; font-size: 18px;">Customer Profile Details</h2>
+                <div class="muted" style="font-size: 12.5px;">Account: <b>{{ customer.email }}</b> · User ID: <b>#{{ customer.user_id }}</b></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="muted" style="font-size: 12px;">KYC Status:</span>
+                {% if customer.kyc_status == 'VERIFIED' %}
+                    <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">✓ VERIFIED</span>
+                {% elif customer.kyc_status == 'PENDING' %}
+                    <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">⏳ PENDING REVIEW</span>
+                {% elif customer.kyc_status == 'REJECTED' %}
+                    <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">✕ REJECTED</span>
+                {% else %}
+                    <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">NOT STARTED</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if customer.kyc_rejection_reason %}
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 18px; margin-bottom: 20px;">
+                <b style="color: #f87171; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Previous Rejection Reason:</b>
+                <div style="color: #fca5a5; font-size: 13.5px; margin-top: 4px;">{{ customer.kyc_rejection_reason }}</div>
+            </div>
+        {% endif %}
+
+        <div class="grid3" style="gap: 18px; font-size: 13px;">
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Phone Number</span>
+                <b style="color: #ffffff;">{{ customer.phone_number or 'Not Provided' }}</b>
+            </div>
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Date of Birth</span>
+                <b style="color: #ffffff;">{{ customer.date_of_birth or 'Not Provided' }}</b>
+            </div>
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Profile Completeness</span>
+                <b style="color: #60a5fa;">{{ customer.profile_completion_percentage }}%</b>
+            </div>
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Residential Address</span>
+                <span style="color: var(--text-secondary);">{{ customer.address or 'Not Provided' }}</span>
+            </div>
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">City / State</span>
+                <span style="color: var(--text-secondary);">{{ customer.city or '—' }}, {{ customer.state or '—' }}</span>
+            </div>
+            <div>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Employment & Income</span>
+                <span style="color: #ffffff;">
+                    {{ customer.employment_type or 'Not Specified' }}
+                    {% if customer.employer_name %}({{ customer.employer_name }}){% endif %}
+                    {% if customer.monthly_income %}· ₹{{ '{:,.2f}'.format(customer.monthly_income) }}/mo{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uploaded Documents Review Table -->
+    <div class="box" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
+            <div>
+                <h2 style="margin: 0; font-size: 16px;">Submitted Verification Documents</h2>
+                <span class="muted" style="font-size: 12px;">Verify credentials against policy standards</span>
+            </div>
+            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                {{ documents|length }} Files
+            </span>
+        </div>
+
+        {% if documents %}
+            <div class="table-responsive" style="border: none; border-radius: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Document Category</th>
+                            <th>Original File</th>
+                            <th>Size</th>
+                            <th>Uploaded Date</th>
+                            <th>Document Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                            <tr>
+                                <td>
+                                    <span style="font-weight: 600; color: #ffffff;">
+                                        {% if doc.document_type == 'IDENTITY_PROOF' %}Identity Proof{% elif doc.document_type == 'ADDRESS_PROOF' %}Address Proof{% else %}Income Proof{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">{{ doc.original_filename }}</span>
+                                </td>
+                                <td class="muted" style="font-size: 12px;">
+                                    {% if doc.file_size < 1048576 %}
+                                        {{ (doc.file_size / 1024)|round(1) }} KB
+                                    {% else %}
+                                        {{ (doc.file_size / 1048576)|round(2) }} MB
+                                    {% endif %}
+                                </td>
+                                <td class="muted" style="font-size: 12px;">{{ doc.uploaded_at }}</td>
+                                <td>
+                                    {% if doc.verification_status == 'VERIFIED' %}
+                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">VERIFIED</span>
+                                    {% elif doc.verification_status == 'REJECTED' %}
+                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">REJECTED</span>
+                                    {% else %}
+                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">PENDING</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{{ url_for('customer.download_document', document_id=doc.document_id) }}" class="btn primary" style="padding: 5px 12px; font-size: 12px;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        <span>Download & Inspect</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="placeholder" style="padding: 40px 20px;">
+                <p class="muted" style="margin: 0;">No documents uploaded by this customer yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Officer Decision Form -->
+    <div class="box" style="padding: 26px;">
+        <h2 style="margin: 0 0 4px; font-size: 17px;">Record KYC Decision</h2>
+        <p class="muted" style="margin-bottom: 20px; font-size: 13px;">Review outcomes trigger customer notifications and update underwriting qualification.</p>
+
+        <form method="POST" action="{{ url_for('officer.kyc_review', customer_id=customer.user_id) }}" id="kyc-decision-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 20px;">
+                <label for="rejection_reason">Rejection Reason <span class="muted" style="font-weight: normal;">(Required only if rejecting KYC)</span></label>
+                <textarea id="rejection_reason" name="rejection_reason" rows="3" placeholder="Provide specific feedback to the customer (e.g. Identity document expired, address document illegible, salary slip missing company seal)..." style="width: 100%;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 14px; align-items: center; justify-content: flex-end;">
+                <button type="submit" name="action" value="REJECT" onclick="return validateRejection();" class="btn" style="padding: 10px 22px; font-size: 13px; color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <span>Reject KYC</span>
+                </button>
+                <button type="submit" name="action" value="VERIFY" class="btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 700; background: #059669; border-color: #10b981;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Approve & Verify KYC</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+function validateRejection() {
+    var reason = document.getElementById('rejection_reason').value.trim();
+    if (!reason) {
+        alert('Please provide a rejection reason explaining why the documents were not approved.');
+        document.getElementById('rejection_reason').focus();
+        return false;
+    }
+    return confirm('Are you sure you want to reject KYC for ' + {{ customer.full_name|tojson }} + '?');
+}
+</script>
+{% endblock %}

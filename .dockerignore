@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env*
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+instance/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+docs/
+.agents/
