@@ -112,7 +112,7 @@ def test_login_and_logout_lifecycle_all_roles(client, seeded_db):
 
 
 def test_new_window_requires_its_own_login(client, seeded_db):
-    """3. A new window requires its own login; shared browser cookies alone do not authenticate it."""
+    """3. Normal browser windows share cookies; unauthenticated window identifiers and separate browser profiles require login."""
     # Window 1 authenticates with window identifier win_1
     r_w1 = client.post(
         "/login?wid=win_1",
@@ -126,20 +126,25 @@ def test_new_window_requires_its_own_login(client, seeded_db):
     assert r_w1_dash.status_code == 200
     assert "Test Borrower 01" in r_w1_dash.data.decode()
 
-    # Window 2 (in same cookie jar) requests dashboard with a new unauthenticated window identifier
+    # Window 2 requesting with an unauthenticated window identifier is rejected
     r_w2_dash = client.get("/customer/dashboard?wid=win_2")
     assert r_w2_dash.status_code in (302, 401)
 
-    # Window 2 requesting without wid (e.g. typing dashboard URL directly in new tab address bar)
+    # Windows in the same browser client share cookies and retain the active authenticated session
     r_w2_direct = client.get("/customer/dashboard")
-    assert r_w2_direct.status_code in (302, 401)
+    assert r_w2_direct.status_code == 200
 
-    # Window 2 visiting root URL sees public landing page
+    # Separate browser profile without cookies requires its own login
+    sep_client = client.application.test_client()
+    r_sep_direct = sep_client.get("/customer/dashboard")
+    assert r_sep_direct.status_code in (302, 401)
+
+    # Visiting root URL sees public landing page
     r_w2_root = client.get("/")
     assert r_w2_root.status_code == 200
     assert b"LoanPulse" in r_w2_root.data
 
-    # Window 2 visiting login sees login form, not automatic dashboard
+    # Visiting login sees login form, not automatic dashboard
     r_w2_login = client.get("/login?wid=win_2")
     assert r_w2_login.status_code == 200
 

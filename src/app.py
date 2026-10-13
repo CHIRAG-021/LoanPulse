@@ -155,7 +155,7 @@ def create_app(config_name=None) -> Flask:
 
     @login_manager.user_loader
     def load_user(user_id):
-        # 1. Window-scoped session validation:
+        # 1. Window-scoped session validation if wid provided:
         if has_request_context():
             wid = request.args.get("wid") or request.headers.get("X-Window-ID")
             if wid:
@@ -172,12 +172,7 @@ def create_app(config_name=None) -> Flask:
                 else:
                     return None
 
-            # If window sessions exist in session, but no wid was provided in request:
-            # Prevent newly opened windows from automatically inheriting other windows' sessions.
-            if not wid and session.get("window_sessions"):
-                return None
-
-            # 2. Multi-tab isolated demo session support:
+            # 2. Multi-tab isolated demo session support if demo_role provided:
             demo_role = request.args.get("demo_role") or request.headers.get("X-Demo-Role")
             if demo_role:
                 demo_sessions = session.get("demo_sessions", {})
@@ -195,7 +190,7 @@ def create_app(config_name=None) -> Flask:
                     # Specific demo role requested but not authenticated
                     return None
 
-        # 3. Standard Flask-Login user loader fallback with single active session token validation:
+        # 3. Standard Flask-Login user loader with single active session token validation:
         try:
             u = db.session.get(User, int(user_id))
             if u:
@@ -237,7 +232,7 @@ def create_app(config_name=None) -> Flask:
                     return None
             return None
 
-        if not wid and not session.get("window_sessions") and "_user_id" in session:
+        if "_user_id" in session:
             try:
                 u = db.session.get(User, int(session["_user_id"]))
                 token = session.get("active_session_token")
@@ -328,11 +323,13 @@ def create_app(config_name=None) -> Flask:
 
     @app.url_defaults
     def propagate_request_context(endpoint, values):
-        """Automatically propagate active demo_role and wid across url_for calls in tabs."""
+        """Automatically propagate active demo_role and wid across url_for calls in test tabs only."""
         if endpoint != "static" and has_request_context():
+            if endpoint in ("auth.index", "auth.landing", "auth.login", "auth.login_user_view", "auth.login_admin_view", "auth.signup", "auth.logout"):
+                return
             if "demo_role" in request.args and "demo_role" not in values:
                 values["demo_role"] = request.args["demo_role"]
-            wid = request.args.get("wid") or request.headers.get("X-Window-ID")
+            wid = request.args.get("wid")
             if wid and "wid" not in values:
                 values["wid"] = wid
 

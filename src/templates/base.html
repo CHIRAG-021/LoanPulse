@@ -35,7 +35,7 @@
 </head>
 <body>
     <header>
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and request.endpoint != 'auth.index' and request.path != '/' %}
             {% if current_user.role == 'CUSTOMER' %}
                 {% set brand_url = url_for('customer.dashboard') %}
                 {% set role_label = 'User' %}
@@ -49,16 +49,19 @@
                 {% set brand_url = url_for('auth.index') %}
                 {% set role_label = current_user.role %}
             {% endif %}
-
-            {% set logout_args = {} %}
-            {% if request.args.get('demo_role') %}
-                {% set _ = logout_args.update({'demo_role': request.args.get('demo_role')}) %}
-            {% endif %}
-            {% if request.args.get('wid') %}
-                {% set _ = logout_args.update({'wid': request.args.get('wid')}) %}
-            {% endif %}
         {% else %}
             {% set brand_url = url_for('auth.index') %}
+            {% if current_user.is_authenticated %}
+                {% if current_user.role == 'CUSTOMER' %}
+                    {% set role_label = 'User' %}
+                {% elif current_user.role == 'LOAN_OFFICER' %}
+                    {% set role_label = 'Officer' %}
+                {% elif current_user.role == 'LOAN_MANAGER' %}
+                    {% set role_label = 'Manager' %}
+                {% else %}
+                    {% set role_label = current_user.role %}
+                {% endif %}
+            {% endif %}
         {% endif %}
         <nav class="topbar">
             <a href="{{ brand_url }}" class="brand" title="LoanPulse Homepage">
@@ -206,14 +209,7 @@
                             </div>
                             <div class="profile-dropdown-divider"></div>
                             <div class="profile-dropdown-actions">
-                                {% set logout_args = {} %}
-                                {% if request.args.get('demo_role') %}
-                                    {% set _ = logout_args.update({'demo_role': request.args.get('demo_role')}) %}
-                                {% endif %}
-                                {% if request.args.get('wid') %}
-                                    {% set _ = logout_args.update({'wid': request.args.get('wid')}) %}
-                                {% endif %}
-                                <form method="POST" action="{{ url_for('auth.logout', **logout_args) }}" id="logoutForm" style="margin: 0; padding: 0;">
+                                <form method="POST" action="{{ url_for('auth.logout') }}" id="logoutForm" style="margin: 0; padding: 0;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="profile-dropdown-item logout-link" id="dropdownLogoutLink" role="menuitem">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -378,7 +374,7 @@
                     </div>
 
                     <div class="nav-drawer-actions">
-                        <form method="POST" action="{{ url_for('auth.logout', **logout_args) }}" id="drawerLogoutForm" style="margin: 0; padding: 0; width: 100%;">
+                        <form method="POST" action="{{ url_for('auth.logout') }}" id="drawerLogoutForm" style="margin: 0; padding: 0; width: 100%;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-drawer-logout" id="drawerLogoutBtn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -468,61 +464,32 @@
 
     <script>
     (function() {
-        // Window-scoped identity management:
-        // Resolve or establish unique window ID in this browsing context's sessionStorage
-        let wid = sessionStorage.getItem('loanpulse_wid');
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlWid = urlParams.get('wid');
-
-        if (urlWid) {
-            wid = urlWid;
-            sessionStorage.setItem('loanpulse_wid', wid);
-        } else if (!wid) {
-            wid = 'w_' + Math.random().toString(36).substring(2, 10);
-            sessionStorage.setItem('loanpulse_wid', wid);
-        }
-
-        // Attach wid and csrf_token to any form submission if not already present
+        // Attach csrf_token to any form submission if not already present
         const csrfMeta = document.querySelector('meta[name="csrf-token"]');
         const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
         document.addEventListener('submit', function(e) {
             const form = e.target;
-            if (form) {
-                if (!form.querySelector('input[name="wid"]')) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'wid';
-                    input.value = wid;
-                    form.appendChild(input);
-                }
-                if (csrfToken && !form.querySelector('input[name="csrf_token"]')) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = 'csrf_token';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
-                }
+            if (form && csrfToken && !form.querySelector('input[name="csrf_token"]')) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
             }
         });
 
-        // Intercept fetch calls to include X-Window-ID and X-CSRFToken
+        // Intercept fetch calls to include X-CSRFToken
         const origFetch = window.fetch;
         if (origFetch) {
             window.fetch = function(url, options) {
                 options = options || {};
                 options.headers = options.headers || {};
                 if (options.headers instanceof Headers) {
-                    if (!options.headers.has('X-Window-ID')) {
-                        options.headers.append('X-Window-ID', wid);
-                    }
                     if (csrfToken && !options.headers.has('X-CSRFToken')) {
                         options.headers.append('X-CSRFToken', csrfToken);
                     }
                 } else if (typeof options.headers === 'object') {
-                    if (!options.headers['X-Window-ID']) {
-                        options.headers['X-Window-ID'] = wid;
-                    }
                     if (csrfToken && !options.headers['X-CSRFToken']) {
                         options.headers['X-CSRFToken'] = csrfToken;
                     }

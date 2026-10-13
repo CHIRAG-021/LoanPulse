@@ -17,7 +17,7 @@ def role_required(*roles):
         def decorated_function(*args, **kwargs):
             wid = request.args.get("wid") or request.headers.get("X-Window-ID")
 
-            # 1. Window-scoped session validation
+            # 1. Window-scoped session validation if explicitly requested
             if wid:
                 window_sessions = session.get("window_sessions", {})
                 if wid not in window_sessions:
@@ -38,12 +38,6 @@ def role_required(*roles):
                     flash("Your session has expired or you have logged in from another window or device. Please sign in again.", "warning")
                     login_endpoint = "auth.login_user_view" if w_info.get("role") == "CUSTOMER" else "auth.login_admin_view"
                     return redirect(url_for(login_endpoint, wid=wid))
-            elif session.get("window_sessions"):
-                # Window sessions exist, but no wid was provided: prevent new unauthenticated windows from inheriting session
-                if request.is_json or request.headers.get("Accept") == "application/json":
-                    return jsonify({"error": "Authentication required for this window"}), 401
-                flash("Please sign in to access your account in this window.", "info")
-                return redirect(url_for("auth.login", next=request.url))
 
             # 2. General authentication check
             if not current_user.is_authenticated:
@@ -213,7 +207,7 @@ def handle_login(portal_type: str | None = None):
             session["active_session_token"] = new_token
             session["_user_id"] = str(user.user_id)
 
-            if wid:
+            if wid and request.args.get("wid"):
                 window_sessions = dict(session.get("window_sessions", {}))
                 window_sessions[wid] = {
                     "user_id": user.user_id,
@@ -222,17 +216,15 @@ def handle_login(portal_type: str | None = None):
                 }
                 session["window_sessions"] = window_sessions
 
-            # Multi-tab isolated demo session mapping
-            role_key = demo_role if demo_role else user.role
-            demo_sessions = dict(session.get("demo_sessions", {}))
-            demo_sessions[role_key] = user.user_id
-            session["demo_sessions"] = demo_sessions
+            # Multi-tab isolated demo session mapping (only if explicitly requested via query)
+            if demo_role and request.args.get("demo_role"):
+                demo_sessions = dict(session.get("demo_sessions", {}))
+                demo_sessions[demo_role] = user.user_id
+                session["demo_sessions"] = demo_sessions
 
-            session_tokens = dict(session.get("session_tokens", {}))
-            session_tokens[role_key] = new_token
-            if wid:
-                session_tokens[wid] = new_token
-            session["session_tokens"] = session_tokens
+                session_tokens = dict(session.get("session_tokens", {}))
+                session_tokens[demo_role] = new_token
+                session["session_tokens"] = session_tokens
             session.modified = True
 
             next_url = request.args.get("next")
@@ -245,24 +237,25 @@ def handle_login(portal_type: str | None = None):
                     "wid": wid,
                 }), 200
 
+            # Validate next_url redirect
             if next_url and next_url.startswith("/") and not next_url.startswith("//"):
-                # Preserve active parameters on next_url redirect
-                if wid and "wid=" not in next_url:
-                    sep = "&" if "?" in next_url else "?"
-                    next_url = f"{next_url}{sep}wid={wid}"
-                if demo_role and "demo_role=" not in next_url:
-                    sep = "&" if "?" in next_url else "?"
-                    next_url = f"{next_url}{sep}demo_role={demo_role}"
-                return redirect(next_url)
+                clean_path = next_url.split("?")[0]
+                if clean_path not in ("/login", "/login/user", "/login/admin", "/login/administration", "/signup", "/"):
+                    is_cust = user.role == "CUSTOMER"
+                    if is_cust and not (clean_path.startswith("/officer") or clean_path.startswith("/manager")):
+                        return redirect(next_url)
+                    elif not is_cust:
+                        if user.role == "LOAN_OFFICER" and not clean_path.startswith("/manager"):
+                            return redirect(next_url)
+                        elif user.role == "LOAN_MANAGER":
+                            return redirect(next_url)
 
-            # Redirect directly to authoritative role dashboard
+            # Redirect directly to authoritative role dashboard (clean URLs by default)
             redirect_args = {}
-            if wid:
+            if wid and request.args.get("wid"):
                 redirect_args["wid"] = wid
-            if demo_role:
+            if demo_role and request.args.get("demo_role"):
                 redirect_args["demo_role"] = demo_role
-            elif not wid:
-                redirect_args["demo_role"] = user.role
 
             if user.role == "CUSTOMER":
                 return redirect(url_for("customer.dashboard", **redirect_args))
@@ -318,8 +311,8 @@ def logout():
     wid = request.args.get("wid") or request.form.get("wid") or request.headers.get("X-Window-ID")
     demo_role = request.args.get("demo_role") or request.form.get("demo_role") or request.headers.get("X-Demo-Role")
 
-    # 1. Window-scoped session logout
-    if wid and "window_sessions" in session:
+    # 1. Window-scoped session logout if explicitly requested via query parameter
+    if wid and request.args.get("wid") and "window_sessions" in session:
         window_sessions = dict(session.get("window_sessions", {}))
         w_info = window_sessions.pop(wid, None)
         session["window_sessions"] = window_sessions
@@ -332,17 +325,18 @@ def logout():
                     user.active_session_token = None
                     db.session.commit()
             except Exception:
-                pass
+                db.session.rollback()
 
         if not window_sessions:
             logout_user()
-            session.pop("active_session_token", None)
-        session.modified = True
+            session.clear()
+        else:
+            session.modified = True
         flash("You have been signed out.", "info")
         return redirect(url_for("auth.login", wid=wid))
 
-    # 2. Demo role isolated logout
-    if demo_role and "demo_sessions" in session:
+    # 2. Demo role isolated logout if explicitly requested via query parameter
+    if demo_role and request.args.get("demo_role") and "demo_sessions" in session:
         demo_sessions = dict(session.get("demo_sessions", {}))
         scoped_uid = demo_sessions.pop(demo_role, None)
         session["demo_sessions"] = demo_sessions
@@ -358,33 +352,29 @@ def logout():
                     user.active_session_token = None
                     db.session.commit()
             except Exception:
-                pass
+                db.session.rollback()
 
         if demo_sessions:
             remaining_uid = next(iter(demo_sessions.values()))
             session["_user_id"] = str(remaining_uid)
+            session.modified = True
+            flash(f"Signed out of {demo_role} session.", "info")
+            return redirect(url_for("auth.login", demo_role=demo_role))
         else:
             logout_user()
-            session.pop("demo_sessions", None)
-            session.pop("active_session_token", None)
-        session.modified = True
-        flash(f"Signed out of {demo_role} session.", "info")
-        return redirect(url_for("auth.login", demo_role=demo_role))
+            session.clear()
+            flash("You have been signed out.", "info")
+            return redirect(url_for("auth.login"))
 
-    # 3. Standard global logout
-    curr_token = session.get("active_session_token")
+    # 3. Standard global authoritative logout
     if current_user and current_user.is_authenticated:
         try:
-            if curr_token and current_user.active_session_token == curr_token:
-                current_user.active_session_token = None
-                db.session.commit()
+            current_user.active_session_token = None
+            db.session.commit()
         except Exception:
-            pass
+            db.session.rollback()
 
     logout_user()
-    session.pop("active_session_token", None)
-    session.pop("window_sessions", None)
-    session.pop("demo_sessions", None)
-    session.pop("session_tokens", None)
+    session.clear()
     flash("You have been signed out.", "info")
     return redirect(url_for("auth.login"))
