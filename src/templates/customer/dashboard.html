@@ -30,7 +30,7 @@
     <!-- Phase 6: KYC Status Card & Profile Completion Section -->
     <div class="box" style="margin-bottom: 24px; padding: 20px 24px; border-left: 4px solid {% if kyc_status == 'VERIFIED' %}#10b981{% elif kyc_status == 'REJECTED' %}#ef4444{% elif kyc_status == 'PENDING' %}#f59e0b{% else %}#3b82f6{% endif %}; background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);">
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
-            <div style="flex: 1; min-width: 280px;">
+            <div style="flex: 1; min-width: min(100%, 280px);">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">KYC Verification</span>
                     {% if kyc_status == 'VERIFIED' %}
@@ -70,7 +70,7 @@
             </div>
 
             <!-- Profile Completion Progress & CTAs -->
-            <div style="min-width: 260px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="flex: 1 1 260px; min-width: min(100%, 260px); display: flex; flex-direction: column; gap: 12px;">
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
                         <span class="muted">Profile Completion</span>
@@ -138,7 +138,7 @@
             </a>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px;">
             {% for prod in active_products %}
                 <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
