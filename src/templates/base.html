@@ -35,7 +35,8 @@
 </head>
 <body>
     <header>
-        {% if current_user.is_authenticated and request.endpoint != 'auth.index' and request.path != '/' %}
+        {% set is_public_page = (request.endpoint in ['auth.index', 'auth.landing'] or request.path in ['/', '/landing']) %}
+        {% if not is_public_page and current_user.is_authenticated %}
             {% if current_user.role == 'CUSTOMER' %}
                 {% set brand_url = url_for('customer.dashboard') %}
                 {% set role_label = 'User' %}
@@ -81,7 +82,7 @@
             <!-- Desktop Navigation Content (Hidden on mobile <= 768px) -->
             <div class="nav-desktop-content">
             
-            {% if current_user.is_authenticated %}
+            {% if not is_public_page and current_user.is_authenticated %}
                 {% if current_user.role == 'CUSTOMER' %}
                     <a href="{{ url_for('customer.dashboard') }}" class="nav {% if request.endpoint == 'customer.dashboard' %}active{% endif %}">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
@@ -278,7 +279,7 @@
             </div>
 
             <div class="nav-drawer-body">
-                {% if current_user.is_authenticated %}
+                {% if not is_public_page and current_user.is_authenticated %}
                     <div class="nav-drawer-user-info">
                         <div class="profile-user-avatar">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

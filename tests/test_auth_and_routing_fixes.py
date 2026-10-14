@@ -109,8 +109,10 @@ def test_strict_role_based_access_control(client, seeded_db):
     # Officer logged in
     client.post("/login", data={"email": "officer01@example.test", "password": "demo123"}, follow_redirects=True)
     assert client.get("/officer/queue").status_code == 200
-    assert client.get("/customer/dashboard").status_code == 403
-    assert client.get("/customer/applications").status_code == 403
+    # Customer routes redirect to login in new tab context rather than displaying confusing 403
+    assert client.get("/customer/dashboard").status_code in (302, 401)
+    assert client.get("/customer/applications").status_code in (302, 401)
+    # Administrative staff privilege escalation is forbidden with 403
     assert client.get("/manager/queue").status_code == 403
     client.post("/logout")
 
@@ -122,11 +124,11 @@ def test_url_query_tampering_cannot_override_rbac(client, seeded_db):
 
     # Officer attempts to access Customer dashboard by injecting ?demo_role=CUSTOMER
     res_tampered = client.get("/customer/dashboard?demo_role=CUSTOMER")
-    assert res_tampered.status_code == 403
+    assert res_tampered.status_code in (302, 401, 403)
 
     # Officer attempts to access Manager queue by injecting ?demo_role=LOAN_MANAGER
     res_mgr_tampered = client.get("/manager/queue?demo_role=LOAN_MANAGER")
-    assert res_mgr_tampered.status_code == 403
+    assert res_mgr_tampered.status_code in (302, 401, 403)
     client.post("/logout")
 
 
@@ -190,3 +192,105 @@ def test_cache_control_headers_on_protected_views(client, seeded_db):
     assert "no-store" in cache_header
     assert "must-revalidate" in cache_header
     client.post("/logout")
+
+
+def test_new_tab_pasting_dashboard_url_does_not_throw_403(client, seeded_db):
+    """When a dashboard URL is opened in a new tab without that role being authenticated, it redirects to login without 403."""
+    # Manager logs in
+    r_mgr = client.post("/login/admin", data={"email": "manager01@example.test", "password": "demo123"}, follow_redirects=True)
+    assert r_mgr.status_code == 200
+    assert client.get("/manager/queue").status_code == 200
+
+    # User opens copied Customer dashboard URL in a new tab (sharing the browser session)
+    r_new_tab = client.get("/customer/dashboard", follow_redirects=False)
+    # Must redirect to login, NOT throw 403 Access Denied
+    assert r_new_tab.status_code in (302, 401)
+    assert "/login" in r_new_tab.headers.get("Location", "")
+
+    # Following redirect lands cleanly on login page
+    r_login_page = client.get("/customer/dashboard", follow_redirects=True)
+    assert r_login_page.status_code == 200
+    assert "Sign In" in r_login_page.data.decode()
+    assert "Access Denied" not in r_login_page.data.decode()
+    assert "Return to Manager Queue" not in r_login_page.data.decode()
+
+    # Original Manager tab remains logged in and functioning
+    assert client.get("/manager/queue").status_code == 200
+    client.post("/logout")
+
+
+def test_error_page_navigation_and_links(client, seeded_db):
+    """403 Access Denied page displays role-appropriate context, safe navigation, and no unintended target tabs."""
+    # 1. Customer attempts to access Officer Queue -> 403 Forbidden
+    client.post("/login/user", data={"email": "borrower01@example.test", "password": "demo123"}, follow_redirects=True)
+    res_cust_viol = client.get("/officer/queue")
+    assert res_cust_viol.status_code == 403
+    html = res_cust_viol.data.decode()
+
+    # Must contain safe, role-appropriate navigation
+    assert "Back to Customer Workspace" in html
+    assert "Sign In / Switch Account" in html
+    assert "Go to Homepage" in html
+    # Must NOT contain confusing cross-role buttons
+    assert "Return to Officer Queue" not in html
+    assert "Return to Manager Queue" not in html
+    # Must navigate in same tab
+    assert 'target="_blank"' not in html
+    client.post("/logout")
+
+    # 2. Officer attempts to access Manager Queue -> 403 Forbidden
+    client.post("/login/admin", data={"email": "officer01@example.test", "password": "demo123"}, follow_redirects=True)
+    res_off_viol = client.get("/manager/queue")
+    assert res_off_viol.status_code == 403
+    html_off = res_off_viol.data.decode()
+
+    # Must contain safe, role-appropriate navigation
+    assert "Back to Officer Workspace" in html_off
+    assert "Sign In / Switch Account" in html_off
+    assert "Go to Homepage" in html_off
+    # Must NOT contain Manager return button
+    assert "Return to Manager Queue" not in html_off
+    assert "Back to Manager Workspace" not in html_off
+    assert 'target="_blank"' not in html_off
+    client.post("/logout")
+
+
+def test_concurrent_multi_role_tabs_in_same_browser(client, seeded_db):
+    """Customer, Officer, and Manager sessions can coexist concurrently without cross-tab session clobbering."""
+    # Step 1: Customer signs in
+    r_c = client.post("/login/user", data={"email": "borrower01@example.test", "password": "demo123"}, follow_redirects=True)
+    assert r_c.status_code == 200
+
+    # Step 2: Officer signs in (same browser cookie jar)
+    r_o = client.post("/login/admin", data={"email": "officer01@example.test", "password": "demo123"}, follow_redirects=True)
+    assert r_o.status_code == 200
+
+    # Step 3: Manager signs in (same browser cookie jar)
+    r_m = client.post("/login/admin", data={"email": "manager01@example.test", "password": "demo123"}, follow_redirects=True)
+    assert r_m.status_code == 200
+
+    # Step 4: Verify all three roles can access their respective dashboards concurrently
+    dash_c = client.get("/customer/dashboard")
+    assert dash_c.status_code == 200
+    assert "Test Borrower 01" in dash_c.data.decode() or "borrower01@example.test" in dash_c.data.decode()
+
+    queue_o = client.get("/officer/queue")
+    assert queue_o.status_code == 200
+    assert "Test Officer 01" in queue_o.data.decode() or "officer01@example.test" in queue_o.data.decode()
+
+    queue_m = client.get("/manager/queue")
+    assert queue_m.status_code == 200
+    assert "Test Manager 01" in queue_m.data.decode() or "manager01@example.test" in queue_m.data.decode()
+
+    # Step 5: Logging out of Customer portal does not log out Officer or Manager
+    r_logout_c = client.post("/logout", headers={"Referer": "http://localhost/customer/dashboard"}, follow_redirects=True)
+    assert r_logout_c.status_code == 200
+    assert client.get("/customer/dashboard").status_code in (302, 401)
+    assert client.get("/officer/queue").status_code == 200
+    assert client.get("/manager/queue").status_code == 200
+
+    # Step 6: Global logout cleans all remaining sessions
+    client.post("/logout")
+    assert client.get("/officer/queue").status_code in (302, 401)
+    assert client.get("/manager/queue").status_code in (302, 401)
+

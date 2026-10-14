@@ -13,23 +13,30 @@
     <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 12px;">
         {{ title }}
     </h1>
-    <p class="muted" style="font-size: 14px; margin-bottom: 28px; line-height: 1.6;">
+    <p class="muted" style="font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
         {{ message }}
     </p>
+
+    {% if code == 403 and current_user.is_authenticated %}
+    <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 12px 16px; margin: 0 auto 24px; max-width: 520px; font-size: 13px; color: var(--text-secondary); text-align: left;">
+        <span style="font-weight: 600; color: #f87171;">Authorization Notice:</span>
+        You are currently signed in as <strong>{{ current_user.full_name }}</strong> ({{ current_user.role.replace('_', ' ').title() }}). To access this resource with a different role, please switch accounts or sign in with authorized credentials.
+    </div>
+    {% endif %}
     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
         {% if current_user.is_authenticated %}
             {% if current_user.role == 'CUSTOMER' %}
-                <a href="{{ url_for('customer.dashboard') }}" class="btn primary">Return to Dashboard</a>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn primary" target="_self">Back to Customer Workspace</a>
             {% elif current_user.role == 'LOAN_OFFICER' %}
-                <a href="{{ url_for('officer.queue') }}" class="btn primary">Return to Officer Queue</a>
+                <a href="{{ url_for('officer.queue') }}" class="btn primary" target="_self">Back to Officer Workspace</a>
             {% elif current_user.role == 'LOAN_MANAGER' %}
-                <a href="{{ url_for('manager.queue') }}" class="btn primary">Return to Manager Queue</a>
-            {% else %}
-                <a href="{{ url_for('auth.index') }}" class="btn primary">Go to Homepage</a>
+                <a href="{{ url_for('manager.queue') }}" class="btn primary" target="_self">Back to Manager Workspace</a>
             {% endif %}
+            <a href="{{ url_for('auth.login') }}" class="btn" target="_self">Sign In / Switch Account</a>
+            <a href="{{ url_for('auth.index') }}" class="btn" target="_self">Go to Homepage</a>
         {% else %}
-            <a href="{{ url_for('auth.index') }}" class="btn primary">Go to Homepage</a>
-            <a href="{{ url_for('auth.login') }}" class="btn">Sign In</a>
+            <a href="{{ url_for('auth.login') }}" class="btn primary" target="_self">Sign In</a>
+            <a href="{{ url_for('auth.index') }}" class="btn" target="_self">Go to Homepage</a>
         {% endif %}
     </div>
 </section>

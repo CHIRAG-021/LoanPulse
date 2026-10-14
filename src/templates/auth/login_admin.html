@@ -18,9 +18,17 @@
     <div class="box" style="padding: 28px; background: var(--bg-card); border-color: var(--border-color);">
         <form method="POST" action="{{ url_for('auth.login_admin_view', demo_role=demo_role) }}" id="login-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="margin-bottom: 16px; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+                <button type="button" onclick="document.getElementById('email').value='officer01@example.test';document.getElementById('password').value='demo123';" class="btn" style="padding: 4px 10px; font-size: 11.5px; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #34d399;">
+                    ⚡ Officer: officer01
+                </button>
+                <button type="button" onclick="document.getElementById('email').value='manager01@example.test';document.getElementById('password').value='demo123';" class="btn" style="padding: 4px 10px; font-size: 11.5px; background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.3); color: #c084fc;">
+                    ⚡ Manager: manager01
+                </button>
+            </div>
             <div style="margin-bottom: 18px;">
                 <label for="email">Staff Email Address *</label>
-                <input type="email" id="email" name="email" value="{{ request.form.get('email', '') }}" placeholder="staff@loanpulse.internal" required autofocus>
+                <input type="email" id="email" name="email" value="{{ request.form.get('email', 'officer01@example.test') }}" placeholder="staff@loanpulse.internal" required autofocus>
             </div>
 
             <div style="margin-bottom: 22px;">

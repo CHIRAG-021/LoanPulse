@@ -47,17 +47,31 @@ def role_required(*roles):
 
             # 3. Single active session token validation against database
             session_token = None
-            if wid:
-                session_token = session.get("window_sessions", {}).get(wid, {}).get("session_token")
+            if wid and wid in session.get("window_sessions", {}):
+                session_token = session["window_sessions"][wid].get("session_token")
             elif request.args.get("demo_role") or request.headers.get("X-Demo-Role"):
                 r_key = request.args.get("demo_role") or request.headers.get("X-Demo-Role")
                 session_token = session.get("session_tokens", {}).get(r_key)
+            if not session_token and current_user and current_user.is_authenticated:
+                session_token = session.get("role_tokens", {}).get(current_user.role)
             if not session_token:
                 session_token = session.get("active_session_token")
 
             if session_token and current_user.active_session_token != session_token:
-                logout_user()
-                session.clear()
+                # Invalidate this specific role or window session
+                if current_user and current_user.role in session.get("role_sessions", {}):
+                    role_sessions = dict(session.get("role_sessions", {}))
+                    role_sessions.pop(current_user.role, None)
+                    session["role_sessions"] = role_sessions
+                    role_tokens = dict(session.get("role_tokens", {}))
+                    role_tokens.pop(current_user.role, None)
+                    session["role_tokens"] = role_tokens
+                if not session.get("role_sessions") and not session.get("window_sessions"):
+                    logout_user()
+                    session.clear()
+                else:
+                    session.modified = True
+
                 if request.is_json or request.headers.get("Accept") == "application/json":
                     return jsonify({"error": "Session invalidated: logged in from another window or device"}), 401
                 flash("Your session has expired or you have logged in from another window or device. Please sign in again.", "warning")
@@ -206,8 +220,31 @@ def handle_login(portal_type: str | None = None):
             # Store active session token and user ID
             session["active_session_token"] = new_token
             session["_user_id"] = str(user.user_id)
+            session["active_role"] = user.role
 
-            if wid and request.args.get("wid"):
+            # Role-scoped session mapping (enables concurrent multi-role tabs in same browser)
+            role_sessions = dict(session.get("role_sessions", {}))
+            role_sessions[user.role] = user.user_id
+            session["role_sessions"] = role_sessions
+
+            role_tokens = dict(session.get("role_tokens", {}))
+            role_tokens[user.role] = new_token
+            session["role_tokens"] = role_tokens
+
+            # Demo sessions mapping for test compatibility
+            demo_sessions = dict(session.get("demo_sessions", {}))
+            demo_sessions[user.role] = user.user_id
+            if demo_role:
+                demo_sessions[demo_role] = user.user_id
+            session["demo_sessions"] = demo_sessions
+
+            session_tokens = dict(session.get("session_tokens", {}))
+            session_tokens[user.role] = new_token
+            if demo_role:
+                session_tokens[demo_role] = new_token
+            session["session_tokens"] = session_tokens
+
+            if wid:
                 window_sessions = dict(session.get("window_sessions", {}))
                 window_sessions[wid] = {
                     "user_id": user.user_id,
@@ -215,16 +252,6 @@ def handle_login(portal_type: str | None = None):
                     "role": user.role,
                 }
                 session["window_sessions"] = window_sessions
-
-            # Multi-tab isolated demo session mapping (only if explicitly requested via query)
-            if demo_role and request.args.get("demo_role"):
-                demo_sessions = dict(session.get("demo_sessions", {}))
-                demo_sessions[demo_role] = user.user_id
-                session["demo_sessions"] = demo_sessions
-
-                session_tokens = dict(session.get("session_tokens", {}))
-                session_tokens[demo_role] = new_token
-                session["session_tokens"] = session_tokens
             session.modified = True
 
             next_url = request.args.get("next")
@@ -366,13 +393,76 @@ def logout():
             flash("You have been signed out.", "info")
             return redirect(url_for("auth.login"))
 
-    # 3. Standard global authoritative logout
+    # 3. Role-scoped logout if specifically targeted via parameter or portal referer:
+    role_to_logout = request.args.get("role") or request.form.get("role")
+    ref = request.referrer or ""
+    if not role_to_logout and ref:
+        if "/customer" in ref:
+            role_to_logout = "CUSTOMER"
+        elif "/officer" in ref:
+            role_to_logout = "LOAN_OFFICER"
+        elif "/manager" in ref:
+            role_to_logout = "LOAN_MANAGER"
+
+    if role_to_logout and "role_sessions" in session and role_to_logout in session["role_sessions"]:
+        role_sessions = dict(session.get("role_sessions", {}))
+        uid = role_sessions.pop(role_to_logout, None)
+        session["role_sessions"] = role_sessions
+
+        role_tokens = dict(session.get("role_tokens", {}))
+        tok = role_tokens.pop(role_to_logout, None)
+        session["role_tokens"] = role_tokens
+
+        demo_sessions = dict(session.get("demo_sessions", {}))
+        demo_sessions.pop(role_to_logout, None)
+        session["demo_sessions"] = demo_sessions
+
+        session_tokens = dict(session.get("session_tokens", {}))
+        session_tokens.pop(role_to_logout, None)
+        session["session_tokens"] = session_tokens
+
+        if uid:
+            try:
+                user = db.session.get(User, int(uid))
+                if user and (not tok or user.active_session_token == tok):
+                    user.active_session_token = None
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
+
+        if role_sessions:
+            rem_role, rem_uid = next(iter(role_sessions.items()))
+            session["active_role"] = rem_role
+            session["_user_id"] = str(rem_uid)
+            session.modified = True
+            flash("You have been signed out.", "info")
+            login_endpoint = "auth.login_user_view" if role_to_logout == "CUSTOMER" else "auth.login_admin_view"
+            return redirect(url_for(login_endpoint))
+
+    # 4. Standard global authoritative logout: clear all role sessions and tokens in DB (if matching)
+    role_sessions = session.get("role_sessions", {})
+    role_tokens = session.get("role_tokens", {})
+    for r_name, u_id in role_sessions.items():
+        try:
+            u = db.session.get(User, int(u_id))
+            tok = role_tokens.get(r_name) or session.get("active_session_token")
+            if u and (not tok or u.active_session_token == tok):
+                u.active_session_token = None
+        except Exception:
+            pass
+
     if current_user and current_user.is_authenticated:
         try:
-            current_user.active_session_token = None
-            db.session.commit()
+            tok = session.get("active_session_token")
+            if not tok or current_user.active_session_token == tok:
+                current_user.active_session_token = None
         except Exception:
-            db.session.rollback()
+            pass
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
     logout_user()
     session.clear()

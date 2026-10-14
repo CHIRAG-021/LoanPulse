@@ -153,94 +153,154 @@ def create_app(config_name=None) -> Flask:
         flash("Please sign in to access this page.", "info")
         return redirect(url_for("auth.login", next=request.url))
 
-    @login_manager.user_loader
-    def load_user(user_id):
+    def _resolve_user(fallback_user_id=None):
+        if not has_request_context():
+            if fallback_user_id:
+                try:
+                    return db.session.get(User, int(fallback_user_id))
+                except (ValueError, TypeError):
+                    return None
+            return None
+
+        path = request.path
+
         # 1. Window-scoped session validation if wid provided:
-        if has_request_context():
-            wid = request.args.get("wid") or request.headers.get("X-Window-ID")
-            if wid:
-                window_sessions = session.get("window_sessions", {})
-                w_info = window_sessions.get(wid)
-                if w_info:
-                    try:
-                        u = db.session.get(User, int(w_info["user_id"]))
-                        if u and u.active_session_token == w_info.get("session_token"):
-                            return u
-                        return None
-                    except (ValueError, TypeError):
-                        return None
-                else:
-                    return None
-
-            # 2. Multi-tab isolated demo session support if demo_role provided:
-            demo_role = request.args.get("demo_role") or request.headers.get("X-Demo-Role")
-            if demo_role:
-                demo_sessions = session.get("demo_sessions", {})
-                scoped_uid = demo_sessions.get(demo_role)
-                if scoped_uid:
-                    try:
-                        u = db.session.get(User, int(scoped_uid))
-                        token = session.get("session_tokens", {}).get(demo_role) or session.get("active_session_token")
-                        if u and (not token or u.active_session_token == token):
-                            return u
-                        return None
-                    except (ValueError, TypeError):
-                        return None
-                else:
-                    # Specific demo role requested but not authenticated
-                    return None
-
-        # 3. Standard Flask-Login user loader with single active session token validation:
-        try:
-            u = db.session.get(User, int(user_id))
-            if u:
-                if has_request_context():
-                    session_token = session.get("active_session_token")
-                    if session_token and u.active_session_token != session_token:
-                        return None
-                return u
-            return None
-        except (ValueError, TypeError):
-            return None
-
-    @login_manager.request_loader
-    def load_user_from_request(req):
-        wid = req.args.get("wid") or req.headers.get("X-Window-ID")
+        wid = request.args.get("wid") or request.headers.get("X-Window-ID")
         if wid and "window_sessions" in session:
             w_info = session["window_sessions"].get(wid)
             if w_info:
                 try:
                     u = db.session.get(User, int(w_info["user_id"]))
-                    if u and u.active_session_token == w_info.get("session_token"):
+                    token = w_info.get("session_token")
+                    if u and u.is_active and (not token or u.active_session_token == token):
                         return u
-                    return None
                 except (ValueError, TypeError):
-                    return None
+                    pass
             return None
 
-        demo_role = req.args.get("demo_role") or req.headers.get("X-Demo-Role")
-        if demo_role and "demo_sessions" in session:
-            scoped_uid = session["demo_sessions"].get(demo_role)
+        # 2. Multi-tab isolated demo session support if demo_role provided:
+        demo_role = request.args.get("demo_role") or request.headers.get("X-Demo-Role")
+        if demo_role:
+            demo_sessions = session.get("demo_sessions", {}) or session.get("role_sessions", {})
+            scoped_uid = demo_sessions.get(demo_role)
             if scoped_uid:
                 try:
                     u = db.session.get(User, int(scoped_uid))
-                    token = session.get("session_tokens", {}).get(demo_role) or session.get("active_session_token")
-                    if u and (not token or u.active_session_token == token):
+                    token = session.get("session_tokens", {}).get(demo_role) or session.get("role_tokens", {}).get(demo_role) or session.get("active_session_token")
+                    if u and u.is_active and (not token or u.active_session_token == token):
                         return u
-                    return None
                 except (ValueError, TypeError):
-                    return None
+                    pass
             return None
 
-        if "_user_id" in session:
+        # 3. Path-based role session isolation:
+        # Ensures Customer (/customer, /applications), Officer (/officer), and Manager (/manager) tabs
+        # running in the same browser NEVER conflict with each other.
+        role_sessions = session.get("role_sessions", {})
+        role_tokens = session.get("role_tokens", {})
+
+        target_role = None
+        if path.startswith("/customer/documents/"):
+            # Shared access route: Customer, Officer, and Manager can access documents
+            target_role = None
+        elif path.startswith("/applications/") and "/status" in path:
+            # Shared status route: Customer, Officer, and Manager can access status
+            target_role = None
+        elif path.startswith("/customer") or path == "/applications" or path.startswith("/applications/new"):
+            target_role = "CUSTOMER"
+        elif path.startswith("/officer"):
+            target_role = "LOAN_OFFICER"
+        elif path.startswith("/manager"):
+            target_role = "LOAN_MANAGER"
+        elif path.startswith("/login/user"):
+            target_role = "CUSTOMER"
+        elif path.startswith("/login/admin") or path.startswith("/login/administration"):
+            act = session.get("active_role")
+            if act in ("LOAN_OFFICER", "LOAN_MANAGER"):
+                target_role = act
+
+        if target_role:
+            if target_role in role_sessions:
+                try:
+                    u = db.session.get(User, int(role_sessions[target_role]))
+                    token = role_tokens.get(target_role)
+                    if u and u.is_active and (not token or u.active_session_token == token):
+                        return u
+                except (ValueError, TypeError):
+                    pass
+                return None
+
+            # target_role is not in role_sessions:
+            # If target_role is CUSTOMER: do NOT fall back to staff roles. A new tab opening /customer
+            # must not inherit staff roles or trigger 403; it must redirect to customer login.
+            if target_role == "CUSTOMER":
+                return None
+
+            # If target_role is LOAN_MANAGER, but LOAN_OFFICER is authenticated:
+            # Fallback to the LOAN_OFFICER user so role_required can enforce RBAC and abort(403)
+            if target_role == "LOAN_MANAGER" and "LOAN_OFFICER" in role_sessions:
+                try:
+                    u = db.session.get(User, int(role_sessions["LOAN_OFFICER"]))
+                    token = role_tokens.get("LOAN_OFFICER")
+                    if u and u.is_active and (not token or u.active_session_token == token):
+                        return u
+                except (ValueError, TypeError):
+                    pass
+
+            # If target_role is staff (LOAN_OFFICER or LOAN_MANAGER), and CUSTOMER is authenticated:
+            # Fallback to CUSTOMER so role_required can enforce RBAC and abort(403)
+            if "CUSTOMER" in role_sessions:
+                try:
+                    u = db.session.get(User, int(role_sessions["CUSTOMER"]))
+                    token = role_tokens.get("CUSTOMER")
+                    if u and u.is_active and (not token or u.active_session_token == token):
+                        return u
+                except (ValueError, TypeError):
+                    pass
+
+            # Otherwise, unauthenticated for this role
+            return None
+
+        # 4. For non-role-specific paths (e.g. /, /notifications, /profile):
+        active_role = session.get("active_role")
+        if active_role and active_role in role_sessions:
             try:
-                u = db.session.get(User, int(session["_user_id"]))
-                token = session.get("active_session_token")
-                if u and (not token or u.active_session_token == token):
+                u = db.session.get(User, int(role_sessions[active_role]))
+                token = role_tokens.get(active_role)
+                if u and u.is_active and (not token or u.active_session_token == token):
                     return u
             except (ValueError, TypeError):
-                return None
+                pass
+
+        if role_sessions:
+            first_role, first_uid = next(iter(role_sessions.items()))
+            try:
+                u = db.session.get(User, int(first_uid))
+                token = role_tokens.get(first_role)
+                if u and u.is_active and (not token or u.active_session_token == token):
+                    return u
+            except (ValueError, TypeError):
+                pass
+
+        uid_to_check = fallback_user_id or session.get("_user_id")
+        if uid_to_check:
+            try:
+                u = db.session.get(User, int(uid_to_check))
+                token = session.get("active_session_token")
+                if u and u.is_active and (not token or u.active_session_token == token):
+                    return u
+            except (ValueError, TypeError):
+                pass
+
         return None
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return _resolve_user(user_id)
+
+    @login_manager.request_loader
+    def load_user_from_request(req):
+        return _resolve_user()
 
     @app.before_request
     def pre_request_tasks():
