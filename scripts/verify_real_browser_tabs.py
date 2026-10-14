@@ -110,37 +110,42 @@ class CDPClient:
 def run_tests():
     server_port = 5055
     cdp_port = 9466
-    base_url = f"http://127.0.0.1:{server_port}"
+    server_proc = None
 
-    print(f"[*] Starting LoanPulse live server on port {server_port}...")
-    server_env = os.environ.copy()
-    server_env["FLASK_ENV"] = "development"
-    server_env["SECRET_KEY"] = "very-secure-secret-key-for-test-at-least-32-chars-long"
-    server_env["TESTING"] = "False"
-    server_env["SESSION_COOKIE_SECURE"] = "False"
-
-    venv_python = str(Path(__file__).resolve().parent.parent / ".venv" / "bin" / "python")
-
-    server_proc = subprocess.Popen(
-        [venv_python, "-m", "flask", "--app", "wsgi:app", "run", "--port", str(server_port)],
-        cwd=str(Path(__file__).resolve().parent.parent),
-        env=server_env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-
-    # Wait for server to be responsive
-    for _ in range(30):
-        try:
-            with urllib.request.urlopen(f"{base_url}/health", timeout=1) as resp:
-                if resp.status == 200:
-                    print("[+] LoanPulse server is up and healthy!")
-                    break
-        except Exception:
-            time.sleep(0.5)
+    if len(sys.argv) > 1 and sys.argv[1].startswith("http"):
+        base_url = sys.argv[1].rstrip("/")
+        print(f"[*] Targeting external URL: {base_url}")
     else:
-        server_proc.terminate()
-        raise RuntimeError("Server failed to start")
+        base_url = f"http://127.0.0.1:{server_port}"
+        print(f"[*] Starting LoanPulse live server on port {server_port}...")
+        server_env = os.environ.copy()
+        server_env["FLASK_ENV"] = "development"
+        server_env["SECRET_KEY"] = "very-secure-secret-key-for-test-at-least-32-chars-long"
+        server_env["TESTING"] = "False"
+        server_env["SESSION_COOKIE_SECURE"] = "False"
+
+        venv_python = str(Path(__file__).resolve().parent.parent / ".venv" / "bin" / "python")
+
+        server_proc = subprocess.Popen(
+            [venv_python, "-m", "flask", "--app", "wsgi:app", "run", "--port", str(server_port)],
+            cwd=str(Path(__file__).resolve().parent.parent),
+            env=server_env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
+        # Wait for server to be responsive
+        for _ in range(30):
+            try:
+                with urllib.request.urlopen(f"{base_url}/health", timeout=1) as resp:
+                    if resp.status == 200:
+                        print("[+] LoanPulse server is up and healthy!")
+                        break
+            except Exception:
+                time.sleep(0.5)
+        else:
+            server_proc.terminate()
+            raise RuntimeError("Server failed to start")
 
     print(f"[*] Starting Headless Google Chrome on CDP port {cdp_port}...")
     chrome_proc = subprocess.Popen(
@@ -166,6 +171,24 @@ def run_tests():
                 info = json.loads(r.read().decode())
                 return CDPClient(info["webSocketDebuggerUrl"])
 
+        def wait_for_selector(tab: CDPClient, selector: str, timeout: float = 10.0):
+            deadline = time.time() + timeout
+            while time.time() < deadline:
+                exists = tab.eval(f"!!document.querySelector('{selector}')")
+                if exists:
+                    return True
+                time.sleep(0.2)
+            raise TimeoutError(f"Timeout waiting for selector '{selector}'")
+
+        def wait_for_url(tab: CDPClient, check_fn, timeout: float = 10.0) -> str:
+            deadline = time.time() + timeout
+            while time.time() < deadline:
+                url = tab.eval("window.location.href")
+                if check_fn(url):
+                    return url
+                time.sleep(0.2)
+            return tab.eval("window.location.href")
+
         # ---------------------------------------------------------------------
         # TEST 1: Public Homepage
         # ---------------------------------------------------------------------
@@ -184,12 +207,13 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 2: Manager Logs In to Tab 1 ===")
         tab1.navigate(f"{base_url}/login/admin")
+        wait_for_selector(tab1, "#email")
         tab1.eval("document.getElementById('email').value = 'manager01@example.test'")
         tab1.eval("document.getElementById('password').value = 'demo123'")
-        tab1.eval("document.getElementById('login-form').submit()")
-        time.sleep(1.5)
+        tab1.eval("document.querySelector('button[type=submit]').click()")
+        tab1_url = wait_for_url(tab1, lambda u: "/manager/queue" in u)
+        time.sleep(0.5)
 
-        tab1_url = tab1.eval("window.location.href")
         tab1_wid = tab1.eval("sessionStorage.getItem('lp_wid')")
         print(f"Tab 1 URL after login: {tab1_url}")
         print(f"Tab 1 wid in sessionStorage: {tab1_wid}")
@@ -206,9 +230,9 @@ def run_tests():
         print("\n=== TEST 3: New Tab Opens Clean Dashboard URL (Requires Login) ===")
         clean_manager_url = f"{base_url}/manager/queue"
         tab2 = open_tab(clean_manager_url)
-        time.sleep(1.5)
+        tab2_url = wait_for_url(tab2, lambda u: "/login" in u)
+        time.sleep(0.5)
 
-        tab2_url = tab2.eval("window.location.href")
         print(f"Tab 2 URL: {tab2_url}")
         assert "/login" in tab2_url, f"Expected Tab 2 to redirect to login, got {tab2_url}"
         tab2_body = tab2.eval("document.body.innerText")
@@ -225,9 +249,9 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 4: New Tab Opens Copied URL with Wid (Fails Closed) ===")
         tab3 = open_tab(tab1_url)
-        time.sleep(1.5)
+        tab3_url = wait_for_url(tab3, lambda u: "/login" in u)
+        time.sleep(0.5)
 
-        tab3_url = tab3.eval("window.location.href")
         print(f"Tab 3 URL: {tab3_url}")
         assert "/login" in tab3_url, f"Expected Tab 3 to fail closed and redirect to login, got {tab3_url}"
         print("[PASS] New Tab 3 copying wid from Tab 1 was blocked and redirected to login.")
@@ -237,12 +261,13 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 5: Tab 2 Logs In as Customer (Multi-role tabs) ===")
         tab2.navigate(f"{base_url}/login/user")
+        wait_for_selector(tab2, "#email")
         tab2.eval("document.getElementById('email').value = 'borrower01@example.test'")
         tab2.eval("document.getElementById('password').value = 'demo123'")
-        tab2.eval("document.getElementById('login-form').submit()")
-        time.sleep(1.5)
+        tab2.eval("document.querySelector('button[type=submit]').click()")
+        tab2_url = wait_for_url(tab2, lambda u: "/customer/dashboard" in u)
+        time.sleep(0.5)
 
-        tab2_url = tab2.eval("window.location.href")
         tab2_wid = tab2.eval("sessionStorage.getItem('lp_wid')")
         print(f"Tab 2 URL: {tab2_url}")
         print(f"Tab 2 wid: {tab2_wid}")
@@ -253,7 +278,7 @@ def run_tests():
 
         # Verify Tab 1 STILL retains Manager workspace across reload
         tab1.eval("window.location.reload()")
-        time.sleep(1.5)
+        time.sleep(1.0)
         tab1_reloaded_text = tab1.eval("document.body.innerText")
         assert "Manager" in tab1_reloaded_text, "Tab 1 must retain Manager workspace after reload!"
         print("[PASS] Tab 1 (Manager) and Tab 2 (Customer) run concurrently in the same browser!")
@@ -263,12 +288,13 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 6: Tab 4 Logs In as Loan Officer ===")
         tab4 = open_tab(f"{base_url}/login/admin")
+        wait_for_selector(tab4, "#email")
         tab4.eval("document.getElementById('email').value = 'officer01@example.test'")
         tab4.eval("document.getElementById('password').value = 'demo123'")
-        tab4.eval("document.getElementById('login-form').submit()")
-        time.sleep(1.5)
+        tab4.eval("document.querySelector('button[type=submit]').click()")
+        tab4_url = wait_for_url(tab4, lambda u: "/officer/queue" in u)
+        time.sleep(0.5)
 
-        tab4_url = tab4.eval("window.location.href")
         tab4_wid = tab4.eval("sessionStorage.getItem('lp_wid')")
         print(f"Tab 4 URL: {tab4_url}")
         print(f"Tab 4 wid: {tab4_wid}")
@@ -285,7 +311,7 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 7: Customer Tab Attempts Access to Manager Queue ===")
         tab2.navigate(f"{base_url}/manager/queue?wid={tab2_wid}")
-        time.sleep(1.2)
+        time.sleep(1.5)
         tab2_forbidden_text = tab2.eval("document.body.innerText")
         print(f"Tab 2 RBAC text snippet: {tab2_forbidden_text[:120]}...")
         assert "403" in tab2_forbidden_text or "Access Denied" in tab2_forbidden_text, "Expected 403 Access Denied!"
@@ -297,17 +323,16 @@ def run_tests():
         # ---------------------------------------------------------------------
         print("\n=== TEST 8: Re-login from Another Tab Invalidates Previous Session ===")
         tab5 = open_tab(f"{base_url}/login/admin")
+        wait_for_selector(tab5, "#email")
         tab5.eval("document.getElementById('email').value = 'manager01@example.test'")
         tab5.eval("document.getElementById('password').value = 'demo123'")
-        tab5.eval("document.getElementById('login-form').submit()")
-        time.sleep(1.5)
-        tab5_url = tab5.eval("window.location.href")
+        tab5.eval("document.querySelector('button[type=submit]').click()")
+        tab5_url = wait_for_url(tab5, lambda u: "/manager/queue" in u)
         assert "/manager/queue" in tab5_url, "Tab 5 should successfully log in as Manager"
 
         # Now reload Tab 1 (earlier session for manager01)
         tab1.eval("window.location.reload()")
-        time.sleep(1.5)
-        tab1_after_url = tab1.eval("window.location.href")
+        tab1_after_url = wait_for_url(tab1, lambda u: "/login" in u)
         print(f"Tab 1 URL after invalidation: {tab1_after_url}")
         assert "/login" in tab1_after_url, f"Expected Tab 1 to be redirected to login, got {tab1_after_url}"
         print("[PASS] Previous session in Tab 1 was successfully invalidated by new login in Tab 5.")
@@ -318,7 +343,8 @@ def run_tests():
 
     finally:
         chrome_proc.terminate()
-        server_proc.terminate()
+        if server_proc:
+            server_proc.terminate()
 
 
 if __name__ == "__main__":
