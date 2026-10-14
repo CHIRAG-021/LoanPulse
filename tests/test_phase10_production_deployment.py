@@ -79,17 +79,23 @@ def test_proxyfix_https_header_propagation():
 
 def test_wsgi_entrypoint_instantiation():
     """Verify that wsgi.py entrypoint successfully instantiates the production application."""
+    import subprocess
+    import sys
     strong_key = "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
-    with patch.dict(os.environ, {
+    env = os.environ.copy()
+    env.update({
         "SECRET_KEY": strong_key,
         "FLASK_ENV": "production",
         "DATABASE_URL": "sqlite:///:memory:",
-    }):
-        import wsgi
-        importlib.reload(wsgi)
-        assert hasattr(wsgi, "app")
-        assert wsgi.app is not None
-        assert wsgi.app.debug is False
+    })
+    cmd = [
+        sys.executable,
+        "-c",
+        "import wsgi; assert hasattr(wsgi, 'app') and wsgi.app is not None and wsgi.app.debug is False; print('OK')",
+    ]
+    res = subprocess.run(cmd, env=env, capture_output=True, text=True)
+    assert res.returncode == 0, f"Subprocess failed: {res.stderr}"
+    assert "OK" in res.stdout
 
 
 def test_static_assets_and_landing_in_production(client, seeded_db):

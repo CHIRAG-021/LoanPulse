@@ -15,18 +15,20 @@ def role_required(*roles):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            wid = request.args.get("wid") or request.headers.get("X-Window-ID")
+            wid = request.args.get("wid") or request.headers.get("X-Window-ID") or (request.form.get("wid") if request.method == "POST" else None)
 
-            # 1. Window-scoped session validation if explicitly requested
-            if wid:
-                window_sessions = session.get("window_sessions", {})
-                if wid not in window_sessions:
+            # 1. Window-scoped session validation if wid provided
+            if wid and "window_sessions" in session:
+                window_sessions = dict(session.get("window_sessions", {}))
+                w_info = window_sessions.get(wid)
+                if not w_info:
                     if request.is_json or request.headers.get("Accept") == "application/json":
                         return jsonify({"error": "Authentication required for this window"}), 401
                     flash("Please sign in to access this window.", "info")
-                    return redirect(url_for("auth.login", wid=wid, next=request.url))
+                    target_path = request.path
+                    login_endpoint = "auth.login_user_view" if target_path.startswith("/customer") or target_path.startswith("/applications") else ("auth.login_admin_view" if target_path.startswith("/officer") or target_path.startswith("/manager") else "auth.login")
+                    return redirect(url_for(login_endpoint, next=request.url))
 
-                w_info = window_sessions[wid]
                 u = db.session.get(User, int(w_info["user_id"]))
                 if not u or u.active_session_token != w_info.get("session_token"):
                     # Session was invalidated elsewhere (e.g. user logged in from another window or device)
@@ -37,13 +39,15 @@ def role_required(*roles):
                         return jsonify({"error": "Session invalidated: logged in from another window or device"}), 401
                     flash("Your session has expired or you have logged in from another window or device. Please sign in again.", "warning")
                     login_endpoint = "auth.login_user_view" if w_info.get("role") == "CUSTOMER" else "auth.login_admin_view"
-                    return redirect(url_for(login_endpoint, wid=wid))
+                    return redirect(url_for(login_endpoint))
 
             # 2. General authentication check
-            if not current_user.is_authenticated:
+            if not current_user or not current_user.is_authenticated:
                 if request.is_json or request.headers.get("Accept") == "application/json":
                     return jsonify({"error": "Authentication required"}), 401
-                return redirect(url_for("auth.login", next=request.url))
+                target_path = request.path
+                login_endpoint = "auth.login_user_view" if target_path.startswith("/customer") or target_path.startswith("/applications") else ("auth.login_admin_view" if target_path.startswith("/officer") or target_path.startswith("/manager") else "auth.login")
+                return redirect(url_for(login_endpoint, next=request.url))
 
             # 3. Single active session token validation against database
             session_token = None
@@ -59,6 +63,10 @@ def role_required(*roles):
 
             if session_token and current_user.active_session_token != session_token:
                 # Invalidate this specific role or window session
+                if wid and "window_sessions" in session:
+                    ws = dict(session["window_sessions"])
+                    ws.pop(wid, None)
+                    session["window_sessions"] = ws
                 if current_user and current_user.role in session.get("role_sessions", {}):
                     role_sessions = dict(session.get("role_sessions", {}))
                     role_sessions.pop(current_user.role, None)
@@ -269,17 +277,23 @@ def handle_login(portal_type: str | None = None):
                 clean_path = next_url.split("?")[0]
                 if clean_path not in ("/login", "/login/user", "/login/admin", "/login/administration", "/signup", "/"):
                     is_cust = user.role == "CUSTOMER"
+                    allowed = False
                     if is_cust and not (clean_path.startswith("/officer") or clean_path.startswith("/manager")):
-                        return redirect(next_url)
+                        allowed = True
                     elif not is_cust:
                         if user.role == "LOAN_OFFICER" and not clean_path.startswith("/manager"):
-                            return redirect(next_url)
+                            allowed = True
                         elif user.role == "LOAN_MANAGER":
-                            return redirect(next_url)
+                            allowed = True
+                    if allowed:
+                        sep = "&" if "?" in next_url else "?"
+                        if wid and "wid=" not in next_url:
+                            next_url = f"{next_url}{sep}wid={wid}"
+                        return redirect(next_url)
 
-            # Redirect directly to authoritative role dashboard (clean URLs by default)
+            # Redirect directly to authoritative role dashboard (with active wid)
             redirect_args = {}
-            if wid and request.args.get("wid"):
+            if wid:
                 redirect_args["wid"] = wid
             if demo_role and request.args.get("demo_role"):
                 redirect_args["demo_role"] = demo_role
@@ -338,8 +352,8 @@ def logout():
     wid = request.args.get("wid") or request.form.get("wid") or request.headers.get("X-Window-ID")
     demo_role = request.args.get("demo_role") or request.form.get("demo_role") or request.headers.get("X-Demo-Role")
 
-    # 1. Window-scoped session logout if explicitly requested via query parameter
-    if wid and request.args.get("wid") and "window_sessions" in session:
+    # 1. Window-scoped session logout if explicitly requested or matching active window
+    if wid and "window_sessions" in session:
         window_sessions = dict(session.get("window_sessions", {}))
         w_info = window_sessions.pop(wid, None)
         session["window_sessions"] = window_sessions
@@ -360,7 +374,7 @@ def logout():
         else:
             session.modified = True
         flash("You have been signed out.", "info")
-        return redirect(url_for("auth.login", wid=wid))
+        return redirect(url_for("auth.login"))
 
     # 2. Demo role isolated logout if explicitly requested via query parameter
     if demo_role and request.args.get("demo_role") and "demo_sessions" in session:

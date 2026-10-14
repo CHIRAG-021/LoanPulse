@@ -21,6 +21,36 @@
             }
         })();
     </script>
+    {% if current_user.is_authenticated and current_wid %}
+    <script>
+        (function() {
+            try {
+                var expectedWid = "{{ current_wid }}";
+                var tabWid = sessionStorage.getItem('lp_wid');
+                if (!tabWid && window.name && window.name.indexOf('win_') === 0) {
+                    tabWid = window.name;
+                    sessionStorage.setItem('lp_wid', tabWid);
+                }
+                if (!tabWid || tabWid !== expectedWid) {
+                    // This tab does not own this window session (e.g. copied URL into a new tab).
+                    // Prevent viewing and redirect to login immediately.
+                    try {
+                        sessionStorage.removeItem('lp_wid');
+                    } catch(e) {}
+                    window.name = "";
+                    var path = window.location.pathname;
+                    var loginUrl = '/login';
+                    if (path.indexOf('/customer') === 0 || path.indexOf('/applications') === 0) {
+                        loginUrl = '/login/user';
+                    } else if (path.indexOf('/officer') === 0 || path.indexOf('/manager') === 0) {
+                        loginUrl = '/login/admin';
+                    }
+                    window.location.replace(loginUrl);
+                }
+            } catch(e) {}
+        })();
+    </script>
+    {% endif %}
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='loanpulse.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='loanpulse.png') }}">
@@ -733,6 +763,144 @@
         } else {
             initThemeToggle();
         }
+    })();
+
+    // Tab-Scoped Window Session Management & Navigation Interceptor
+    (function() {
+        function getOrCreateWid() {
+            var wid = null;
+            try {
+                wid = sessionStorage.getItem('lp_wid');
+                if (!wid && window.name && window.name.indexOf('win_') === 0) {
+                    wid = window.name;
+                }
+            } catch (e) {}
+
+            var renderedWid = "{{ current_wid }}";
+            if (!wid && renderedWid) {
+                wid = renderedWid;
+            }
+
+            if (!wid) {
+                wid = 'win_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+            }
+
+            try {
+                sessionStorage.setItem('lp_wid', wid);
+                window.name = wid;
+            } catch (e) {}
+            return wid;
+        }
+
+        var tabWid = getOrCreateWid();
+
+        // Patch fetch to automatically send X-Window-ID header on same-origin requests
+        if (window.fetch) {
+            var originalFetch = window.fetch;
+            window.fetch = function(resource, init) {
+                init = init || {};
+                var headers = new Headers(init.headers || {});
+                if (!headers.has('X-Window-ID')) {
+                    headers.append('X-Window-ID', tabWid);
+                }
+                init.headers = headers;
+                return originalFetch.call(this, resource, init);
+            };
+        }
+
+        // Patch XMLHttpRequest to send X-Window-ID header on same-origin requests
+        if (window.XMLHttpRequest) {
+            var originalXHROpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function() {
+                this._isSameOrigin = false;
+                try {
+                    var targetUrl = arguments[1];
+                    var parsed = new URL(targetUrl, window.location.origin);
+                    if (parsed.origin === window.location.origin) {
+                        this._isSameOrigin = true;
+                    }
+                } catch(e) {}
+                return originalXHROpen.apply(this, arguments);
+            };
+            var originalXHRSend = XMLHttpRequest.prototype.send;
+            XMLHttpRequest.prototype.send = function() {
+                if (this._isSameOrigin) {
+                    try {
+                        this.setRequestHeader('X-Window-ID', tabWid);
+                    } catch(e) {}
+                }
+                return originalXHRSend.apply(this, arguments);
+            };
+        }
+
+        function attachWidToElements() {
+            var curWid = tabWid;
+            try {
+                curWid = sessionStorage.getItem('lp_wid') || tabWid;
+            } catch(e) {}
+
+            // Attach wid input to all forms
+            document.querySelectorAll('form').forEach(function(form) {
+                var widInput = form.querySelector('input[name="wid"]');
+                if (!widInput) {
+                    widInput = document.createElement('input');
+                    widInput.type = 'hidden';
+                    widInput.name = 'wid';
+                    form.appendChild(widInput);
+                }
+                widInput.value = curWid;
+            });
+
+            // Attach wid to internal navigation links (excluding static)
+            document.querySelectorAll('a[href]').forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+                try {
+                    var parsed = new URL(link.href, window.location.origin);
+                    if (parsed.origin === window.location.origin && !parsed.pathname.startsWith('/static/')) {
+                        if (!parsed.searchParams.has('wid') && !parsed.pathname.endsWith('/logout')) {
+                            parsed.searchParams.set('wid', curWid);
+                            link.setAttribute('href', parsed.pathname + parsed.search + parsed.hash);
+                        }
+                    }
+                } catch(e) {}
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachWidToElements);
+        } else {
+            attachWidToElements();
+        }
+
+        // Event delegation for link clicks
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest('a[href]');
+            if (!link) return;
+            var href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+            try {
+                var parsed = new URL(link.href, window.location.origin);
+                if (parsed.origin === window.location.origin && !parsed.pathname.startsWith('/static/')) {
+                    var curWid = tabWid;
+                    try { curWid = sessionStorage.getItem('lp_wid') || tabWid; } catch(e) {}
+                    if (!parsed.searchParams.has('wid') && !parsed.pathname.endsWith('/logout')) {
+                        parsed.searchParams.set('wid', curWid);
+                        link.href = parsed.pathname + parsed.search + parsed.hash;
+                    }
+                }
+            } catch(e) {}
+        }, true);
+
+        // Clear storage on logout form submit
+        document.querySelectorAll('#logoutForm, #drawerLogoutForm').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                try {
+                    sessionStorage.removeItem('lp_wid');
+                    window.name = '';
+                } catch(e) {}
+            });
+        });
     })();
     </script>
 </body>
