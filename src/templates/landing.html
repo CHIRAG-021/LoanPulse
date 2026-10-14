@@ -42,7 +42,7 @@ html[data-theme="dark"] .hero-title span.gradient {
         A transparent, rule-based loan application and workflow management platform. Streamline applicant submissions, officer ratio evaluations, and executive decisioning in a unified console.
     </p>
 
-    <div class="hero-cta-group" style="margin-bottom: 16px;">
+    <div class="hero-cta-group" style="margin-bottom: 24px;">
         <a href="{{ url_for('auth.signup') }}" class="btn primary">
             <span>Sign Up / Get Started</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -52,27 +52,6 @@ html[data-theme="dark"] .hero-title span.gradient {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
         </a>
     </div>
-
-    {% if session.get('role_sessions') %}
-        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; margin-bottom: 24px; flex-wrap: wrap; position: relative; z-index: 2;">
-            <span class="muted" style="font-size: 13px; font-weight: 500;">Active Workspaces:</span>
-            {% if session.get('role_sessions', {}).get('CUSTOMER') %}
-                <a href="{{ url_for('customer.dashboard') }}" class="btn" style="padding: 5px 14px; font-size: 12.5px; border-color: rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.1); color: #60a5fa;">
-                    Go to Customer Dashboard →
-                </a>
-            {% endif %}
-            {% if session.get('role_sessions', {}).get('LOAN_OFFICER') %}
-                <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 5px 14px; font-size: 12.5px; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.1); color: #34d399;">
-                    Go to Officer Queue →
-                </a>
-            {% endif %}
-            {% if session.get('role_sessions', {}).get('LOAN_MANAGER') %}
-                <a href="{{ url_for('manager.queue') }}" class="btn" style="padding: 5px 14px; font-size: 12.5px; border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.1); color: #c084fc;">
-                    Go to Manager Queue →
-                </a>
-            {% endif %}
-        </div>
-    {% endif %}
 
     <p class="muted" style="font-size: 13px; margin: 0 auto 42px; position: relative; z-index: 1;">
         Create your LoanPulse account to apply for and track your loans.

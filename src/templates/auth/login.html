@@ -44,15 +44,12 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div style="margin-bottom: 18px;">
                         <label for="email">Email Address *</label>
-                        <input type="email" id="email" name="email" value="{{ request.form.get('email', 'officer01@example.test' if selected_role == 'LOAN_OFFICER' else ('manager01@example.test' if selected_role == 'LOAN_MANAGER' else 'borrower01@example.test')) }}" placeholder="e.g. borrower01@example.test" required autofocus>
+                        <input type="email" id="email" name="email" value="{{ request.form.get('email', '') }}" placeholder="name@example.com" required autofocus>
                     </div>
 
                     <div style="margin-bottom: 22px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label for="password" style="margin: 0;">Password *</label>
-                            <span class="muted" style="font-size: 11px;">Default: <code>demo123</code></span>
-                        </div>
-                        <input type="password" id="password" name="password" value="demo123" placeholder="Enter password" required>
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" placeholder="Enter password" required>
                     </div>
 
                     <div class="actions" style="margin-top: 10px;">
@@ -78,60 +75,36 @@
             </div>
         </div>
 
-        <!-- Right Column: Demo Persona Quick Access & Multi-Tab Isolation -->
+        <!-- Right Column: Portal Information -->
         <div class="box" style="padding: 28px; background: var(--bg-card); display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-                <h2>Quick Demo Sign In</h2>
-                <p class="muted" style="margin-bottom: 18px;">Click any demo persona to automatically populate credentials:</p>
+                <h2>Enterprise Loan Console</h2>
+                <p class="muted" style="margin-bottom: 18px;">Access deterministic credit assessment, pipeline queue operations, and executive underwriting.</p>
                 
                 <div style="display: grid; gap: 12px;">
-                    <button type="button" class="btn" onclick="setDemo('borrower01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
-                        <div>
-                            <div style="font-size: 11px; text-transform: uppercase; color: #60a5fa; font-weight: 700; letter-spacing: 0.04em;">Customer / Borrower</div>
-                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">borrower01@example.test</div>
-                        </div>
-                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
-                    </button>
+                    <div style="padding: 14px 16px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                        <div style="font-size: 11px; text-transform: uppercase; color: #60a5fa; font-weight: 700; letter-spacing: 0.04em;">Customer Portal</div>
+                        <div class="muted" style="font-size: 13px; margin-top: 4px;">Submit loan applications, upload KYC verification documents, and track approval status in real time.</div>
+                    </div>
 
-                    <button type="button" class="btn" onclick="setDemo('officer01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
-                        <div>
-                            <div style="font-size: 11px; text-transform: uppercase; color: #34d399; font-weight: 700; letter-spacing: 0.04em;">Loan Officer</div>
-                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">officer01@example.test</div>
-                        </div>
-                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
-                    </button>
+                    <div style="padding: 14px 16px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                        <div style="font-size: 11px; text-transform: uppercase; color: #34d399; font-weight: 700; letter-spacing: 0.04em;">Loan Officer Console</div>
+                        <div class="muted" style="font-size: 13px; margin-top: 4px;">Evaluate automated credit scores, DTI ratios, and compliance rules before forwarding to executive management.</div>
+                    </div>
 
-                    <button type="button" class="btn" onclick="setDemo('manager01@example.test', 'demo123')" style="justify-content: space-between; padding: 12px 16px; text-align: left; background: var(--bg-elevated); border-color: var(--border-color);">
-                        <div>
-                            <div style="font-size: 11px; text-transform: uppercase; color: #c084fc; font-weight: 700; letter-spacing: 0.04em;">Loan Manager</div>
-                            <div style="font-weight: 600; color: #ffffff; font-size: 13.5px; margin-top: 2px;">manager01@example.test</div>
-                        </div>
-                        <span class="tag" style="font-size: 11px; background: var(--bg-surface);">Autofill</span>
-                    </button>
+                    <div style="padding: 14px 16px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                        <div style="font-size: 11px; text-transform: uppercase; color: #c084fc; font-weight: 700; letter-spacing: 0.04em;">Management Workspace</div>
+                        <div class="muted" style="font-size: 13px; margin-top: 4px;">Final credit authorization, underwriting exceptions, and portfolio disbursement execution.</div>
+                    </div>
                 </div>
             </div>
 
             <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 18px;">
-                <div class="muted" style="margin-bottom: 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
-                    Multi-Tab Demo Isolation:
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <a href="{{ url_for('customer.dashboard', demo_role='CUSTOMER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Customer Tab ↗</a>
-                    <a href="{{ url_for('officer.queue', demo_role='LOAN_OFFICER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Officer Tab ↗</a>
-                    <a href="{{ url_for('manager.queue', demo_role='LOAN_MANAGER') }}" target="_blank" class="btn" style="font-size: 11.5px; padding: 6px 12px;">Manager Tab ↗</a>
-                </div>
-                <div class="note" style="margin-top: 16px; margin-bottom: 0; font-size: 12px; padding: 10px 14px;">
-                    Synthetic test accounts. Concurrent browser tabs use isolated session scoping.
+                <div class="note" style="margin: 0; font-size: 12px; padding: 10px 14px;">
+                    Secure authentication required. Contact your platform administrator if you need access provisioned.
                 </div>
             </div>
         </div>
     </div>
 </section>
-
-<script>
-function setDemo(email, password) {
-    document.getElementById('email').value = email;
-    document.getElementById('password').value = password;
-}
-</script>
 {% endblock %}

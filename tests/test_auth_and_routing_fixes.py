@@ -24,28 +24,28 @@ def test_public_root_url_always_accessible(client, seeded_db):
     assert b"Sign Up" in res_unauth.data
     assert b"Log In" in res_unauth.data
 
-    # Logged in as Customer
+    # Logged in as Customer: root URL / still displays public landing page without Active Workspaces section
     client.post("/login", data={"email": "borrower01@example.test", "password": "demo123"}, follow_redirects=True)
     res_cust = client.get("/", follow_redirects=False)
     assert res_cust.status_code == 200
     assert b"LoanPulse" in res_cust.data
-    assert b"Go to Customer Dashboard" in res_cust.data
+    assert b"Active Workspaces" not in res_cust.data
     client.post("/logout")
 
-    # Logged in as Loan Officer
+    # Logged in as Loan Officer: root URL / still displays public landing page without Active Workspaces section
     client.post("/login", data={"email": "officer01@example.test", "password": "demo123"}, follow_redirects=True)
     res_off = client.get("/", follow_redirects=False)
     assert res_off.status_code == 200
     assert b"LoanPulse" in res_off.data
-    assert b"Go to Officer Queue" in res_off.data
+    assert b"Active Workspaces" not in res_off.data
     client.post("/logout")
 
-    # Logged in as Loan Manager
+    # Logged in as Loan Manager: root URL / still displays public landing page without Active Workspaces section
     client.post("/login", data={"email": "manager01@example.test", "password": "demo123"}, follow_redirects=True)
     res_mgr = client.get("/", follow_redirects=False)
     assert res_mgr.status_code == 200
     assert b"LoanPulse" in res_mgr.data
-    assert b"Go to Manager Queue" in res_mgr.data
+    assert b"Active Workspaces" not in res_mgr.data
     client.post("/logout")
 
 
