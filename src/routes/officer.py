@@ -317,12 +317,20 @@ def run_assessment_route(application_id):
             notes=f"Officer re-assessed application: {assessment.assessment_result} (Ratio: {assessment.calculated_ratio:.2f})",
         )
     except ValidationError as e:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         error_msg = f"Cannot assess application: {e.message}"
         if request.is_json or request.headers.get("Accept") == "application/json":
             return jsonify({"error": error_msg, "details": e.errors}), 400
         flash(error_msg, "danger")
         return redirect(url_for("officer.review_application", application_id=application_id))
     except Exception as e:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         current_app.logger.error(f"Cannot assess application {application_id}: {e}")
         error_msg = f"Assessment failed: {str(e)}"
         if request.is_json or request.headers.get("Accept") == "application/json":
@@ -337,7 +345,7 @@ def run_assessment_route(application_id):
             "application_id": assessment.application_id,
             "assessment_result": assessment.assessment_result,
             "calculated_ratio": assessment.calculated_ratio,
-            "assessed_at": assessment.assessed_at.isoformat(),
+            "assessed_at": assessment.assessed_at.isoformat() if hasattr(assessment.assessed_at, "isoformat") else str(assessment.assessed_at),
         }), 200
 
     flash(

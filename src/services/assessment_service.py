@@ -458,10 +458,17 @@ def assess_application(
             s.commit()
         except Exception:
             s.rollback()
-            # Ensure the referenced rule exists and retry commit
-            active_rule = get_default_active_rule(s)
-            assessment.rule_id = active_rule.rule_id
-            s.add(assessment)
-            s.commit()
+            try:
+                # Ensure the referenced rule exists and retry commit
+                active_rule = get_default_active_rule(s)
+                assessment.rule_id = active_rule.rule_id
+                s.add(assessment)
+                s.commit()
+            except Exception as e2:
+                s.rollback()
+                import logging
+                logging.getLogger(__name__).warning(
+                    f"Unable to persist assessment record for {application.application_id}: {e2}"
+                )
 
     return assessment

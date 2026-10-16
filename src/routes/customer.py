@@ -601,13 +601,24 @@ def new_application():
                 notes=f"Deterministic underwriting evaluation completed: {assessment.assessment_result} (LTI Ratio: {assessment.calculated_ratio:.2f}x, Affordability: {assessment.affordability_ratio:.2f})",
             )
         except Exception as e:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
             current_app.logger.error(f"Automatic underwriting evaluation failed for {target_app.application_id}: {e}")
-            record_application_audit(
-                target_app,
-                current_user,
-                action="ASSESSMENT_PENDING",
-                notes="Automated rule assessment postponed; application queued for manual loan officer review.",
-            )
+            try:
+                record_application_audit(
+                    target_app,
+                    current_user,
+                    action="ASSESSMENT_PENDING",
+                    notes="Automated rule assessment postponed; application queued for manual loan officer review.",
+                )
+            except Exception as audit_err:
+                current_app.logger.error(f"Fallback audit recording failed: {audit_err}")
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
 
         if request.is_json or request.headers.get("Accept") == "application/json":
             return jsonify({
