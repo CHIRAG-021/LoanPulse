@@ -205,6 +205,13 @@ def seed_database(app=None, data_dir: Path | None = None) -> dict[str, int]:
             db.session.bulk_save_objects(product_rows)
             db.session.commit()
 
+        # Synchronize PostgreSQL primary key sequences with max existing IDs
+        try:
+            from src.models import sync_database_sequences
+            sync_database_sequences()
+        except Exception:
+            pass
+
         counts["users"] = User.query.count()
         counts["loan_applications"] = LoanApplication.query.count()
         counts["assessment_rules"] = AssessmentRule.query.count()

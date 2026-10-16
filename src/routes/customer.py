@@ -587,7 +587,14 @@ def new_application():
                 notes="New application submitted for officer review.",
             )
             from src.services.notification_service import create_status_notification
-            create_status_notification(target_app, old_status=None, new_status="PENDING_REVIEW")
+            try:
+                create_status_notification(target_app, old_status=None, new_status="PENDING_REVIEW")
+            except Exception as notif_err:
+                current_app.logger.warning(f"Notification creation notice: {notif_err}")
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
 
         # Execute deterministic underwriting engine (Phase 7 / 8 requirement)
         assessment_result_label = "PENDING_OFFICER_REVIEW"

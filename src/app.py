@@ -194,6 +194,13 @@ def ensure_schema_compatibility(app: Flask):
                     db.session.rollback()
                 except Exception:
                     pass
+
+            # 5. Synchronize PostgreSQL primary key sequences with max existing IDs (prevents UniqueViolation)
+            try:
+                from src.models import sync_database_sequences
+                sync_database_sequences()
+            except Exception as seq_err:
+                app.logger.warning(f"Sequence sync notice: {seq_err}")
         except Exception as e:
             app.logger.warning(f"Schema compatibility / seed initialization warning: {e}")
 
@@ -570,7 +577,7 @@ def create_app(config_name=None) -> Flask:
     # Basic system health check route
     @app.route("/health")
     def health_check():
-        return jsonify({"status": "ok", "app": "LoanPulse", "version": "v1.2.1-fix"})
+        return jsonify({"status": "ok", "app": "LoanPulse", "version": "v1.2.2-seqfix"})
 
     # Browser favicon and brand asset direct endpoints
     @app.route("/favicon.ico")

@@ -316,3 +316,53 @@ class RolePermission(db.Model):
 
     def __repr__(self):
         return f"<RolePermission {self.role} -> {self.resource}: {self.can_view}>"
+
+
+def sync_database_sequences(bind=None):
+    """Synchronize PostgreSQL primary key sequences with the maximum existing ID in each table.
+
+    Prevents duplicate key violations (psycopg.errors.UniqueViolation) when records
+    have been imported or seeded with explicit primary key IDs.
+    """
+    from sqlalchemy import text
+    engine = bind or db.engine
+    if not engine or engine.dialect.name != "postgresql":
+        return
+
+    tables_and_pks = [
+        ("notifications", "notification_id"),
+        ("users", "user_id"),
+        ("loan_products", "product_id"),
+        ("assessment_rules", "rule_id"),
+        ("assessments", "assessment_id"),
+        ("application_audit_logs", "log_id"),
+        ("customer_documents", "document_id"),
+    ]
+
+    with engine.connect() as conn:
+        for table, pk in tables_and_pks:
+            try:
+                res = conn.execute(text(f"SELECT MAX({pk}) FROM {table}")).scalar()
+                max_id = int(res) if res is not None else 0
+                seq_sql = f"""
+                    SELECT setval(
+                        pg_get_serial_sequence('{table}', '{pk}'),
+                        GREATEST(:max_id, 1),
+                        :is_called
+                    )
+                """
+                conn.execute(text(seq_sql), {"max_id": max_id, "is_called": max_id > 0})
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                    res = conn.execute(text(f"SELECT MAX({pk}) FROM {table}")).scalar()
+                    max_id = int(res) if res is not None else 0
+                    fallback_sql = f"SELECT setval('{table}_{pk}_seq', GREATEST(:max_id, 1), :is_called)"
+                    conn.execute(text(fallback_sql), {"max_id": max_id, "is_called": max_id > 0})
+                    conn.commit()
+                except Exception:
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass

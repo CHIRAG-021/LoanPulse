@@ -91,7 +91,21 @@ def record_application_audit(
     )
     s.add(audit_entry)
     if commit:
-        s.commit()
+        try:
+            s.commit()
+        except Exception:
+            s.rollback()
+            try:
+                from src.models import sync_database_sequences
+                sync_database_sequences()
+                max_id = s.query(db.func.max(ApplicationAuditLog.log_id)).scalar() or 0
+                audit_entry.log_id = max_id + 1
+                s.add(audit_entry)
+                s.commit()
+            except Exception as e2:
+                s.rollback()
+                import logging
+                logging.getLogger(__name__).warning(f"Could not persist audit log: {e2}")
     return audit_entry
 
 
@@ -177,7 +191,10 @@ def transition_application_status(
     )
 
     # Generate customer in-app notification
-    create_status_notification(application, old_status=old_status, new_status=new_status)
+    try:
+        create_status_notification(application, old_status=old_status, new_status=new_status)
+    except Exception:
+        pass
 
     if commit:
         s.commit()

@@ -34,9 +34,27 @@ def create_status_notification(
         created_at=date.today(),
         is_read=False,
     )
-    s.add(notification)
-    s.commit()
-    return notification
+    try:
+        s.add(notification)
+        s.commit()
+        return notification
+    except Exception as e:
+        s.rollback()
+        # Handle PostgreSQL sequence desynchronization or unique constraint collisions
+        try:
+            from sqlalchemy import text
+            from src.models import sync_database_sequences
+            sync_database_sequences()
+            max_id = s.query(db.func.max(Notification.notification_id)).scalar() or 0
+            notification.notification_id = max_id + 1
+            s.add(notification)
+            s.commit()
+            return notification
+        except Exception as retry_err:
+            s.rollback()
+            import logging
+            logging.getLogger(__name__).warning(f"Could not persist notification record: {retry_err}")
+            return None
 
 
 def process_status_change(
