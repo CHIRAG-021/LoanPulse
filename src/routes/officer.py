@@ -322,6 +322,13 @@ def run_assessment_route(application_id):
             return jsonify({"error": error_msg, "details": e.errors}), 400
         flash(error_msg, "danger")
         return redirect(url_for("officer.review_application", application_id=application_id))
+    except Exception as e:
+        current_app.logger.error(f"Cannot assess application {application_id}: {e}")
+        error_msg = f"Assessment failed: {str(e)}"
+        if request.is_json or request.headers.get("Accept") == "application/json":
+            return jsonify({"error": error_msg}), 400
+        flash(error_msg, "danger")
+        return redirect(url_for("officer.review_application", application_id=application_id))
 
     if request.is_json or request.headers.get("Accept") == "application/json":
         return jsonify({

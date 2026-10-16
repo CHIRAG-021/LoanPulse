@@ -590,13 +590,24 @@ def new_application():
             create_status_notification(target_app, old_status=None, new_status="PENDING_REVIEW")
 
         # Execute deterministic underwriting engine (Phase 7 / 8 requirement)
-        assessment = assess_application(target_app, product=product, save=True)
-        record_application_audit(
-            target_app,
-            current_user,
-            action="ASSESSED",
-            notes=f"Deterministic underwriting evaluation completed: {assessment.assessment_result} (LTI Ratio: {assessment.calculated_ratio:.2f}x, Affordability: {assessment.affordability_ratio:.2f})",
-        )
+        assessment_result_label = "PENDING_OFFICER_REVIEW"
+        try:
+            assessment = assess_application(target_app, product=product, save=True)
+            assessment_result_label = assessment.assessment_result
+            record_application_audit(
+                target_app,
+                current_user,
+                action="ASSESSED",
+                notes=f"Deterministic underwriting evaluation completed: {assessment.assessment_result} (LTI Ratio: {assessment.calculated_ratio:.2f}x, Affordability: {assessment.affordability_ratio:.2f})",
+            )
+        except Exception as e:
+            current_app.logger.error(f"Automatic underwriting evaluation failed for {target_app.application_id}: {e}")
+            record_application_audit(
+                target_app,
+                current_user,
+                action="ASSESSMENT_PENDING",
+                notes="Automated rule assessment postponed; application queued for manual loan officer review.",
+            )
 
         if request.is_json or request.headers.get("Accept") == "application/json":
             return jsonify({
@@ -609,7 +620,7 @@ def new_application():
                 "product_id": target_app.product_id,
                 "applied_interest_rate": target_app.applied_interest_rate,
                 "estimated_monthly_emi": target_app.estimated_monthly_emi,
-                "assessment_result": assessment.assessment_result,
+                "assessment_result": assessment_result_label,
             }), 201
 
         flash(f"Application {target_app.application_id} submitted successfully and sent for review.", "success")

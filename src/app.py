@@ -16,7 +16,7 @@ csrf = CSRFProtect()
 
 
 def ensure_schema_compatibility(app: Flask):
-    """Ensure all declared model tables and columns exist in SQLite database on startup."""
+    """Ensure all declared model tables and columns exist in the database on startup."""
     if app.config.get("TESTING"):
         return
 
@@ -25,12 +25,20 @@ def ensure_schema_compatibility(app: Flask):
             import csv
             from pathlib import Path
             from sqlalchemy import inspect, text
-            from src.models import User, LoanApplication, CustomerDocument, Assessment, LoanProduct, ApplicationAuditLog
+            from src.models import (
+                User, LoanApplication, CustomerDocument, Assessment,
+                LoanProduct, ApplicationAuditLog, AssessmentRule,
+                Notification, RolePermission,
+            )
             db.create_all()
             inspector = inspect(db.engine)
             table_names = inspector.get_table_names()
 
-            models = [User, LoanApplication, CustomerDocument, Assessment, LoanProduct, ApplicationAuditLog]
+            models = [
+                User, LoanApplication, CustomerDocument, Assessment,
+                LoanProduct, ApplicationAuditLog, AssessmentRule,
+                Notification, RolePermission,
+            ]
             with db.engine.connect() as conn:
                 for model in models:
                     table_name = model.__tablename__
@@ -47,20 +55,58 @@ def ensure_schema_compatibility(app: Flask):
                                 elif col.name == "existing_obligations":
                                     default_clause = " DEFAULT 0.0"
                                 elif col.name == "active":
-                                    default_clause = " DEFAULT 1"
+                                    default_clause = " DEFAULT 1" if db.engine.dialect.name == "sqlite" else " DEFAULT TRUE"
                                 elif col.default is not None and getattr(col.default, "is_scalar", False):
                                     val = col.default.arg
                                     if isinstance(val, str):
                                         default_clause = f" DEFAULT '{val}'"
+                                    elif isinstance(val, bool):
+                                        default_clause = f" DEFAULT {str(val).upper()}" if db.engine.dialect.name != "sqlite" else f" DEFAULT {1 if val else 0}"
                                     elif isinstance(val, (int, float)):
                                         default_clause = f" DEFAULT {val}"
                                 sql = f"ALTER TABLE {table_name} ADD COLUMN {col.name} {col_type}{default_clause}"
                                 conn.execute(text(sql))
                 conn.commit()
 
-            # Ensure initial loan products exist in database
+            # Ensure essential catalog & configuration tables are seeded on startup
+            data_dir = Path(__file__).resolve().parent.parent / "data"
+
+            # 1. Assessment Rules (critical for deterministic underwriting & foreign keys)
+            if AssessmentRule.query.count() == 0:
+                rules_file = data_dir / "assessment_rules.csv"
+                if rules_file.exists():
+                    with open(rules_file, "r", encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        for r in reader:
+                            rule = AssessmentRule(
+                                rule_id=int(r["rule_id"]),
+                                rule_name=r["rule_name"].strip(),
+                                min_monthly_income=float(r["min_monthly_income"]),
+                                max_loan_to_income_ratio=float(r["max_loan_to_income_ratio"]),
+                                min_term_months=int(r["min_term_months"]),
+                                max_term_months=int(r["max_term_months"]),
+                                result_if_pass=r["result_if_pass"].strip(),
+                                active=r.get("active", "True").strip().lower() in ("true", "1", "yes"),
+                            )
+                            db.session.add(rule)
+                    db.session.commit()
+                else:
+                    default_rule = AssessmentRule(
+                        rule_id=1,
+                        rule_name="Standard Eligibility Rule",
+                        min_monthly_income=30000.0,
+                        max_loan_to_income_ratio=0.50,
+                        min_term_months=12,
+                        max_term_months=60,
+                        result_if_pass="ELIGIBLE",
+                        active=True,
+                    )
+                    db.session.add(default_rule)
+                    db.session.commit()
+
+            # 2. Loan Products
             if LoanProduct.query.count() == 0:
-                products_file = Path(__file__).resolve().parent.parent / "data" / "loan_products.csv"
+                products_file = data_dir / "loan_products.csv"
                 if products_file.exists():
                     with open(products_file, "r", encoding="utf-8") as f:
                         reader = csv.DictReader(f)
@@ -81,8 +127,41 @@ def ensure_schema_compatibility(app: Flask):
                             )
                             db.session.add(p)
                     db.session.commit()
-        except Exception:
-            pass
+
+            # 3. Role Permissions
+            if RolePermission.query.count() == 0:
+                roles_file = data_dir / "role_permissions.csv"
+                if roles_file.exists():
+                    with open(roles_file, "r", encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        for r in reader:
+                            perm = RolePermission(
+                                role=r["role"].strip(),
+                                resource=r["resource"].strip(),
+                                can_view=r.get("can_view", "True").strip().lower() in ("true", "1", "yes"),
+                            )
+                            db.session.add(perm)
+                    db.session.commit()
+
+            # 4. Users (ensure standard seed accounts exist if database is unseeded)
+            if User.query.count() == 0:
+                users_file = data_dir / "users.csv"
+                if users_file.exists():
+                    with open(users_file, "r", encoding="utf-8") as f:
+                        reader = csv.DictReader(f)
+                        for r in reader:
+                            u = User(
+                                user_id=int(r["user_id"]),
+                                full_name=r["full_name"].strip(),
+                                email=r["email"].strip().lower(),
+                                role=r["role"].strip(),
+                                is_active=r.get("is_active", "True").strip().lower() in ("true", "1", "yes"),
+                            )
+                            u.set_password("demo123")
+                            db.session.add(u)
+                    db.session.commit()
+        except Exception as e:
+            app.logger.warning(f"Schema compatibility / seed initialization warning: {e}")
 
 
 def create_app(config_name=None) -> Flask:
@@ -509,7 +588,7 @@ def create_app(config_name=None) -> Flask:
             db.session.rollback()
         except Exception:
             pass
-        app.logger.error(f"Internal server error: {error}")
+        app.logger.exception(f"Internal server error: {error}")
         desc = "An unexpected server error occurred. Our engineering team has been logged."
         if request.is_json or request.headers.get("Accept") == "application/json":
             return jsonify({"error": "Internal Server Error", "message": desc}), 500
