@@ -536,7 +536,7 @@ def create_app(config_name=None) -> Flask:
     # Basic system health check route
     @app.route("/health")
     def health_check():
-        return jsonify({"status": "ok", "app": "LoanPulse"})
+        return jsonify({"status": "ok", "app": "LoanPulse", "version": "v1.2.1-fix"})
 
     # Browser favicon and brand asset direct endpoints
     @app.route("/favicon.ico")
@@ -591,7 +591,7 @@ def create_app(config_name=None) -> Flask:
         app.logger.exception(f"Internal server error: {error}")
         desc = "An unexpected server error occurred. Our engineering team has been logged."
         if request.is_json or request.headers.get("Accept") == "application/json":
-            return jsonify({"error": "Internal Server Error", "message": desc}), 500
+            return jsonify({"error": "Internal Server Error", "message": desc, "exception": str(error)}), 500
         return render_template("error.html", code=500, title="Internal Server Error", message=desc), 500
 
     return app
