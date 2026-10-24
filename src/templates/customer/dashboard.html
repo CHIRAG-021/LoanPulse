@@ -4,23 +4,26 @@
 
 {% block content %}
 <section class="screen">
-    <div class="head">
+    <!-- Customer Welcome & Action Header -->
+    <div class="customer-hero-head head">
         <div>
             <h1>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="customer-avatar-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </span>
                 <span>Welcome back, {{ current_user.full_name }}</span>
             </h1>
-            <div class="muted">Manage your loan applications, track their progress, and stay updated on important decisions.</div>
+            <div class="muted">Manage your loan applications, track real-time underwriting progress, and stay updated on credit decisions.</div>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 10px 16px; font-weight: 600;" title="Fetch latest status updates and approvals">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 9px 16px; font-weight: 600;" title="Fetch latest status updates and approvals">
                 <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
                 </svg>
                 <span>Refresh</span>
             </button>
-            <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 10px 20px; font-weight: 700;">
+            <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 9px 20px; font-weight: 700;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 <span>Apply for a Loan</span>
             </a>
@@ -28,56 +31,56 @@
     </div>
 
     <!-- Phase 6: KYC Status Card & Profile Completion Section -->
-    <div class="box" style="margin-bottom: 24px; padding: 20px 24px; border-left: 4px solid {% if kyc_status == 'VERIFIED' %}#10b981{% elif kyc_status == 'REJECTED' %}#ef4444{% elif kyc_status == 'PENDING' %}#f59e0b{% else %}#3b82f6{% endif %}; background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);">
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
-            <div style="flex: 1; min-width: min(100%, 280px);">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">KYC Verification</span>
+    <div class="kyc-banner {% if kyc_status == 'VERIFIED' %}kyc-verified{% elif kyc_status == 'REJECTED' %}kyc-rejected{% elif kyc_status == 'PENDING' %}kyc-pending{% else %}kyc-not-started{% endif %}">
+        <div class="kyc-banner-inner">
+            <div class="kyc-banner-content">
+                <div class="kyc-banner-eyebrow">
+                    <span class="label">KYC Verification</span>
                     {% if kyc_status == 'VERIFIED' %}
-                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">
                             ✓ VERIFIED
                         </span>
                     {% elif kyc_status == 'PENDING' %}
-                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">
                             ⏳ PENDING REVIEW
                         </span>
                     {% elif kyc_status == 'REJECTED' %}
-                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #dc2626; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
                             ✕ REJECTED
                         </span>
                     {% else %}
-                        <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #2563eb; border-color: rgba(59, 130, 246, 0.35); font-weight: 700;">
                             NOT STARTED
                         </span>
                     {% endif %}
                 </div>
 
                 {% if kyc_status == 'VERIFIED' %}
-                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #ffffff;">Your Identity is Verified</h3>
-                    <p class="muted" style="margin: 0; font-size: 13px;">All required identification documents have been verified by a loan officer. You are eligible for swift loan processing.</p>
+                    <h3 class="kyc-banner-title">Your Identity is Verified</h3>
+                    <p class="kyc-banner-desc">All required identification documents have been verified by a loan officer. You are eligible for swift loan processing.</p>
                 {% elif kyc_status == 'PENDING' %}
-                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #ffffff;">Verification in Progress</h3>
-                    <p class="muted" style="margin: 0; font-size: 13px;">Your documents have been submitted and are currently in the loan officer review queue.</p>
+                    <h3 class="kyc-banner-title">Verification in Progress</h3>
+                    <p class="kyc-banner-desc">Your documents have been submitted and are currently in the loan officer review queue.</p>
                 {% elif kyc_status == 'REJECTED' %}
-                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #f87171;">KYC Verification Action Required</h3>
-                    <p style="margin: 0; font-size: 13px; color: #fca5a5;">
+                    <h3 class="kyc-banner-title">KYC Verification Action Required</h3>
+                    <p class="kyc-banner-desc" style="color: var(--danger); font-weight: 500;">
                         Reason: {{ current_user.kyc_rejection_reason or "Document issues identified. Please replace rejected documents and resubmit." }}
                     </p>
                 {% else %}
-                    <h3 style="margin: 0 0 6px; font-size: 16px; color: #ffffff;">Complete Your Verification</h3>
-                    <p class="muted" style="margin: 0; font-size: 13px;">Upload identity, address, and income proofs to ensure seamless application reviews and disbursements.</p>
+                    <h3 class="kyc-banner-title">Complete Your Verification</h3>
+                    <p class="kyc-banner-desc">Upload identity, address, and income proofs to ensure seamless application reviews and disbursements.</p>
                 {% endif %}
             </div>
 
             <!-- Profile Completion Progress & CTAs -->
-            <div style="flex: 1 1 260px; min-width: min(100%, 260px); display: flex; flex-direction: column; gap: 12px;">
+            <div class="kyc-banner-meta">
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
                         <span class="muted">Profile Completion</span>
-                        <b style="color: {% if completion_pct >= 80 %}#34d399{% elif completion_pct >= 50 %}#fbbf24{% else %}#60a5fa{% endif %}; font-family: var(--font-mono);">{{ completion_pct }}%</b>
+                        <b style="color: {% if completion_pct >= 80 %}#059669{% elif completion_pct >= 50 %}#d97706{% else %}#2563eb{% endif %}; font-family: var(--font-mono);">{{ completion_pct }}%</b>
                     </div>
-                    <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden;">
-                        <div style="width: {{ completion_pct }}%; height: 100%; background: {% if completion_pct >= 80 %}#10b981{% elif completion_pct >= 50 %}#f59e0b{% else %}#3b82f6{% endif %}; border-radius: 999px; transition: width 0.3s ease;"></div>
+                    <div class="kyc-progress-track">
+                        <div class="kyc-progress-bar" style="width: {{ completion_pct }}%; background: {% if completion_pct >= 80 %}#10b981{% elif completion_pct >= 50 %}#f59e0b{% else %}#3b82f6{% endif %};"></div>
                     </div>
                 </div>
 
@@ -87,7 +90,7 @@
                     {% elif kyc_status == 'PENDING' %}
                         <a href="{{ url_for('customer.kyc') }}" class="btn" style="flex: 1; padding: 7px 12px; font-size: 12px; text-align: center;">Check KYC Status</a>
                     {% elif kyc_status == 'REJECTED' %}
-                        <a href="{{ url_for('customer.kyc') }}" class="btn primary" style="flex: 1; padding: 7px 12px; font-size: 12px; text-align: center; background: #dc2626;">Fix & Resubmit KYC</a>
+                        <a href="{{ url_for('customer.kyc') }}" class="btn primary" style="flex: 1; padding: 7px 12px; font-size: 12px; text-align: center; background: #dc2626; border-color: #dc2626;">Fix & Resubmit KYC</a>
                     {% else %}
                         <a href="{{ url_for('customer.kyc') }}" class="btn primary" style="flex: 1; padding: 7px 12px; font-size: 12px; text-align: center;">Complete KYC</a>
                     {% endif %}
@@ -97,37 +100,37 @@
         </div>
     </div>
 
-    <!-- Meaningful Customer KPI Summary Cards based on actual DB records -->
-    <div class="grid4" style="margin-bottom: 26px;">
+    <!-- Customer KPI Summary Cards based on actual DB records -->
+    <div class="grid4" style="margin-bottom: var(--space-6);">
         <div class="stat">
             <span>Total Applications</span>
-            <b style="color: #ffffff;">{{ total_count }}</b>
+            <b style="color: var(--text-primary);">{{ total_count }}</b>
             <div class="muted" style="font-size: 11px; margin-top: 6px; text-transform: none; letter-spacing: normal;">All submitted loan requests</div>
         </div>
         <div class="stat">
             <span>Pending Applications</span>
-            <b style="color: #fbbf24;">{{ pending_count }}</b>
+            <b style="color: #d97706;">{{ pending_count }}</b>
             <div class="muted" style="font-size: 11px; margin-top: 6px; text-transform: none; letter-spacing: normal;">In Review / Processing</div>
         </div>
         <div class="stat">
             <span>Approved Applications</span>
-            <b style="color: #34d399;">{{ approved_count }}</b>
+            <b style="color: #059669;">{{ approved_count }}</b>
             <div class="muted" style="font-size: 11px; margin-top: 6px; text-transform: none; letter-spacing: normal;">Credit decision approved</div>
         </div>
         <div class="stat">
             <span>Disbursed Applications</span>
-            <b style="color: #60a5fa;">{{ disbursed_count }}</b>
+            <b style="color: #2563eb;">{{ disbursed_count }}</b>
             <div class="muted" style="font-size: 11px; margin-top: 6px; text-transform: none; letter-spacing: normal;">Funds released</div>
         </div>
     </div>
 
-    <!-- Phase 7: Available Loan Products Catalog Section -->
+    <!-- Available Loan Products Catalog Section -->
     {% if active_products %}
-    <div class="box" style="margin-bottom: 26px; padding: 22px 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+    <div class="box" style="margin-bottom: var(--space-6); padding: var(--space-5) var(--space-6);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: 10px;">
             <div>
                 <h2 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                     <span>Available Loan Products</span>
                 </h2>
                 <span class="muted" style="font-size: 12px;">Explore configurable borrowing facilities tailored to your financing needs</span>
@@ -138,25 +141,33 @@
             </a>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 14px;">
+        <div class="loan-product-grid">
             {% for prod in active_products %}
-                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                            <h3 style="margin: 0; font-size: 14.5px; color: #ffffff;">{{ prod.product_name }}</h3>
-                            <span style="font-size: 12px; font-weight: 700; color: #38bdf8; font-family: var(--font-mono);">{{ prod.annual_interest_rate }}%</span>
+                <div class="loan-product-card">
+                    <div class="loan-product-card-top">
+                        <div class="loan-product-card-head">
+                            <h3 class="loan-product-name">{{ prod.product_name }}</h3>
+                            <span class="loan-product-rate-badge">{{ prod.annual_interest_rate }}% p.a.</span>
                         </div>
-                        <p class="muted" style="font-size: 11.5px; line-height: 1.4; margin-bottom: 12px;">{{ prod.description }}</p>
-                        <div style="font-size: 11.5px; color: var(--text-secondary); margin-bottom: 4px;">
-                            Amount: <b>₹{{ "{:,.0f}".format(prod.min_amount) }} – ₹{{ "{:,.0f}".format(prod.max_amount) }}</b>
-                        </div>
-                        <div style="font-size: 11.5px; color: var(--text-secondary);">
-                            Tenure: <b>{{ prod.min_term_months }} – {{ prod.max_term_months }} mos</b>
+                        <p class="loan-product-desc">{{ prod.description }}</p>
+                        <div class="loan-product-specs">
+                            <div class="loan-product-specs-row">
+                                <span class="label">Amount Range</span>
+                                <span class="val">₹{{ "{:,.0f}".format(prod.min_amount) }} – ₹{{ "{:,.0f}".format(prod.max_amount) }}</span>
+                            </div>
+                            <div class="loan-product-specs-row">
+                                <span class="label">Permitted Tenure</span>
+                                <span class="val">{{ prod.min_term_months }} – {{ prod.max_term_months }} mos</span>
+                            </div>
+                            <div class="loan-product-specs-row">
+                                <span class="label">Min Income</span>
+                                <span class="val">₹{{ "{:,.0f}".format(prod.min_monthly_income) }}/mo</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                        <span class="muted" style="font-size: 11px;">Min Inc: ₹{{ "{:,.0f}".format(prod.min_monthly_income) }}</span>
-                        <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 4px 10px; font-size: 11.5px;">Apply Now</a>
+                    <div class="loan-product-card-bottom">
+                        <span class="muted" style="font-size: 11px;">Max LTI: {{ prod.max_loan_to_income_ratio }}x</span>
+                        <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 5px 12px; font-size: 12px; font-weight: 600;">Apply Now</a>
                     </div>
                 </div>
             {% endfor %}
@@ -165,14 +176,14 @@
     {% endif %}
 
     <!-- Recent Applications Table Section -->
-    <div class="box" id="applications" style="padding: 0; overflow: hidden; margin-bottom: 26px;">
+    <div class="box" id="applications" style="padding: 0; overflow: hidden; margin-bottom: var(--space-6);">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <div>
                 <h2 style="margin: 0; font-size: 16px;">My Applications</h2>
                 <span class="muted" style="font-size: 12px;">Track your submitted loan requests and decision status</span>
             </div>
             {% if applications %}
-                <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
                     {{ applications|length }} Applications
                 </span>
             {% endif %}
@@ -195,9 +206,9 @@
                         {% for app in applications %}
                             <tr>
                                 <td>
-                                    <span style="font-weight: 700; color: #60a5fa; font-family: var(--font-mono); font-size: 13px;">{{ app.application_id }}</span>
+                                    <span style="font-weight: 700; color: var(--primary); font-family: var(--font-mono); font-size: 13px;">{{ app.application_id }}</span>
                                 </td>
-                                <td style="font-weight: 600; font-variant-numeric: tabular-nums; color: #ffffff;">₹{{ '{:,.2f}'.format(app.requested_amount) }}</td>
+                                <td style="font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-primary);">₹{{ '{:,.2f}'.format(app.requested_amount) }}</td>
                                 <td class="muted">{{ app.term_months }} months</td>
                                 <td>
                                     <span class="status status-{{ app.status }}">{{ app.status }}</span>
@@ -215,16 +226,18 @@
                 </table>
             </div>
         {% else %}
-            <div class="placeholder" style="padding: 54px 24px;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: #60a5fa; margin-bottom: 16px;">
+            <div class="placeholder empty-state" style="padding: 54px 24px;">
+                <div class="empty-state-icon" style="width: 48px; height: 48px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); margin: 0 auto 16px;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 </div>
-                <h3 style="margin: 0 0 6px; font-size: 18px; color: #ffffff;">No loan applications yet</h3>
-                <p class="muted" style="max-width: 420px; margin-bottom: 22px;">Start your first application to begin your LoanPulse journey.</p>
-                <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 10px 22px;">
-                    <span>Apply for a Loan</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </a>
+                <h3 class="empty-state-title" style="margin: 0 0 6px; font-size: 18px; color: var(--text-primary);">No loan applications yet</h3>
+                <p class="muted empty-state-description" style="max-width: 420px; margin: 0 auto 22px;">Start your first application to begin your LoanPulse journey.</p>
+                <div class="empty-state-actions">
+                    <a href="{{ url_for('customer.new_application') }}" class="btn primary" style="padding: 10px 22px;">
+                        <span>Apply for a Loan</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </a>
+                </div>
             </div>
         {% endif %}
     </div>
@@ -233,10 +246,10 @@
     <div class="box" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                 <h2 style="margin: 0; font-size: 15px;">Recent Notifications & Updates</h2>
                 {% if unread_count and unread_count > 0 %}
-                    <span class="tag" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-size: 11px;">
+                    <span class="tag" style="background: rgba(59, 130, 246, 0.2); color: var(--primary); border-color: rgba(59, 130, 246, 0.4); font-size: 11px;">
                         {{ unread_count }} Unread
                     </span>
                 {% endif %}
@@ -263,7 +276,7 @@
                             <tr style="{% if not n.is_read %}background: rgba(59, 130, 246, 0.05);{% endif %}">
                                 <td class="muted" style="font-size: 12px; white-space: nowrap;">{{ n.created_at }}</td>
                                 <td>
-                                    <a href="{{ url_for('customer.application_status', application_id=n.application_id) }}" style="font-weight: 700; color: #60a5fa; font-family: var(--font-mono);">
+                                    <a href="{{ url_for('customer.application_status', application_id=n.application_id) }}" style="font-weight: 700; color: var(--primary); font-family: var(--font-mono);">
                                         {{ n.application_id }}
                                     </a>
                                 </td>
@@ -281,7 +294,7 @@
                                     {% if n.is_read %}
                                         <span class="tag" style="font-size: 10px; background: var(--bg-muted); color: var(--text-muted);">Read</span>
                                     {% else %}
-                                        <span class="tag" style="font-size: 10px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">Unread</span>
+                                        <span class="tag" style="font-size: 10px; background: rgba(59, 130, 246, 0.2); color: var(--primary); border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">Unread</span>
                                     {% endif %}
                                 </td>
                             </tr>

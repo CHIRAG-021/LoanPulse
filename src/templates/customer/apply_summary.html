@@ -7,12 +7,12 @@
     <div class="head">
         <div>
             <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 <span>Confirm Application Details</span>
             </h1>
             <div class="muted">Review your information carefully before committing your loan application to evaluation.</div>
         </div>
-        <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.3);">
+        <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
             Step 2 of 2 · Final Review
         </span>
     </div>
@@ -26,45 +26,45 @@
     </div>
 
     <div class="box" style="padding: 28px; margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
             <div>
-                <h2 style="margin: 0; font-size: 18px;">Application Summary</h2>
-                <div class="muted" style="font-size: 12.5px;">Applicant: <b>{{ data.get('applicant_name') }}</b></div>
+                <h2 style="margin: 0; font-size: 18px; color: var(--text-primary);">Application Summary</h2>
+                <div class="muted" style="font-size: 12.5px;">Applicant: <b style="color: var(--text-primary);">{{ data.get('applicant_name') }}</b></div>
             </div>
-            <span class="tag" style="font-family: var(--font-mono); font-size: 13px;">
+            <span class="tag" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
                 Requested: ₹{{ '{:,.2f}'.format(data.get('requested_amount', 0)) }}
             </span>
         </div>
 
-        <!-- Phase 7: Loan Product & Repayment Overview Card -->
+        <!-- Loan Product & Repayment Overview Card -->
         {% if product %}
-            <div style="background: linear-gradient(180deg, rgba(30, 58, 138, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <div>
-                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #93c5fd;">Selected Facility</span>
-                        <h3 style="margin: 2px 0 0; font-size: 17px; color: #ffffff;">{{ product.product_name }}</h3>
+                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Selected Facility</span>
+                        <h3 style="margin: 2px 0 0; font-size: 17px; color: var(--text-primary);">{{ product.product_name }}</h3>
                     </div>
-                    <span class="tag" style="font-family: var(--font-mono); background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700;">
+                    <span class="tag" style="font-family: var(--font-mono); background: rgba(37, 99, 235, 0.12); color: var(--primary); font-weight: 700;">
                         {{ applied_interest_rate }}% p.a.
                     </span>
                 </div>
 
                 <div class="grid3" style="gap: 14px;">
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 6px;">
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Monthly EMI</span>
-                        <div style="font-size: 20px; font-weight: 800; color: #38bdf8; font-family: var(--font-mono); margin-top: 3px;">
+                        <div style="font-size: 20px; font-weight: 800; color: var(--primary); font-family: var(--font-mono); margin-top: 3px;">
                             ₹{{ "{:,.2f}".format(estimated_monthly_emi) if estimated_monthly_emi else '—' }}
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 6px;">
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Total Interest</span>
-                        <div style="font-size: 16px; font-weight: 700; color: #ffffff; font-family: var(--font-mono); margin-top: 6px;">
+                        <div style="font-size: 16px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); margin-top: 6px;">
                             ₹{{ "{:,.2f}".format(emi_info.total_interest) if emi_info else '—' }}
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 6px;">
+                    <div style="background: var(--bg-card); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 11px; text-transform: uppercase;">Total Repayment</span>
-                        <div style="font-size: 16px; font-weight: 700; color: #34d399; font-family: var(--font-mono); margin-top: 6px;">
+                        <div style="font-size: 16px; font-weight: 700; color: #059669; font-family: var(--font-mono); margin-top: 6px;">
                             ₹{{ "{:,.2f}".format(emi_info.total_payable) if emi_info else '—' }}
                         </div>
                     </div>
@@ -74,62 +74,62 @@
 
         <div class="grid2" style="gap: 20px; margin-bottom: 24px;">
             <!-- Card 1: Loan Facility -->
-            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px;">
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #60a5fa; margin-bottom: 14px;">
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); margin-bottom: 14px;">
                     1. Loan Specifications
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px;">
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Principal Amount:</span>
-                        <b style="color: #ffffff;">₹{{ '{:,.2f}'.format(data.get('requested_amount', 0)) }}</b>
+                        <b style="color: var(--text-primary); font-variant-numeric: tabular-nums;">₹{{ '{:,.2f}'.format(data.get('requested_amount', 0)) }}</b>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Term Length:</span>
-                        <span>{{ data.get('term_months') }} months ({{ (data.get('term_months') / 12)|round(1) }} years)</span>
+                        <span style="color: var(--text-primary);">{{ data.get('term_months') }} months ({{ (data.get('term_months') / 12)|round(1) }} years)</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Loan Purpose:</span>
-                        <span><b>{{ data.get('loan_purpose') }}</b></span>
+                        <span><b style="color: var(--text-primary);">{{ data.get('loan_purpose') }}</b></span>
                     </div>
                     {% if data.get('loan_purpose_other') %}
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Purpose Details:</span>
-                        <span style="max-width: 200px; text-align: right;">{{ data.get('loan_purpose_other') }}</span>
+                        <span style="max-width: 200px; text-align: right; color: var(--text-secondary);">{{ data.get('loan_purpose_other') }}</span>
                     </div>
                     {% endif %}
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Preferred Repayment Day:</span>
-                        <span>Day {{ data.get('preferred_repayment_date') or '5' }} of each month</span>
+                        <span style="color: var(--text-primary);">Day {{ data.get('preferred_repayment_date') or '5' }} of each month</span>
                     </div>
                 </div>
             </div>
 
             <!-- Card 2: Financial & Employment Profile -->
-            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px;">
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #34d399; margin-bottom: 14px;">
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #059669; margin-bottom: 14px;">
                     2. Financial & Employment Profile
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px;">
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Monthly Gross Income:</span>
-                        <b style="color: #ffffff;">₹{{ '{:,.2f}'.format(data.get('monthly_income', 0)) }}</b>
+                        <b style="color: var(--text-primary); font-variant-numeric: tabular-nums;">₹{{ '{:,.2f}'.format(data.get('monthly_income', 0)) }}</b>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Existing Monthly Obligations:</span>
-                        <span>₹{{ '{:,.2f}'.format(data.get('existing_obligations', 0)) }}</span>
+                        <span style="color: var(--text-primary); font-variant-numeric: tabular-nums;">₹{{ '{:,.2f}'.format(data.get('existing_obligations', 0)) }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Employment Type:</span>
-                        <span>{{ data.get('employment_type') or 'Not Specified' }}</span>
+                        <span style="color: var(--text-primary);">{{ data.get('employment_type') or 'Not Specified' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span class="muted">Employer / Business:</span>
-                        <span>{{ data.get('employer_name') or 'Not Specified' }}</span>
+                        <span style="color: var(--text-primary);">{{ data.get('employer_name') or 'Not Specified' }}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-color); padding-top: 8px;">
                         <span class="muted">Loan-to-Annual-Income Ratio:</span>
                         {% set lti = (data.get('requested_amount', 0) / (data.get('monthly_income', 1) * 12)) %}
-                        <b style="color: {% if lti <= 0.50 %}#34d399{% elif lti <= 0.70 %}#fbbf24{% else %}#f87171{% endif %}; font-family: var(--font-mono);">
+                        <b style="color: {% if lti <= 0.50 %}#059669{% elif lti <= 0.70 %}#d97706{% else %}#dc2626{% endif %}; font-family: var(--font-mono);">
                             {{ '{:.2f}'.format(lti) }}x
                         </b>
                     </div>
@@ -137,8 +137,8 @@
             </div>
         </div>
 
-        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa; flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             <div style="font-size: 13px; color: var(--text-secondary);">
                 By confirming, you submit this loan application into the underwriting queue. Evaluation results will be recorded in compliance with policy rules.
             </div>
@@ -163,11 +163,11 @@
             <input type="hidden" name="draft_id" value="{{ draft_id }}">
             {% endif %}
 
-            <div style="display: flex; gap: 14px; align-items: center; justify-content: flex-end;">
-                <button type="button" onclick="window.history.back()" class="btn" style="padding: 11px 22px; font-size: 14px;">
+            <div style="display: flex; gap: 14px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+                <button type="button" onclick="window.history.back()" class="btn" style="padding: 10px 22px; font-size: 14px;">
                     <span>← Edit Details</span>
                 </button>
-                <button type="submit" class="btn primary" style="padding: 11px 26px; font-size: 14px; font-weight: 700;">
+                <button type="submit" class="btn primary" style="padding: 10px 26px; font-size: 14px; font-weight: 700;">
                     <span>Confirm & Submit Application</span>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>

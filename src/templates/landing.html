@@ -28,10 +28,12 @@ html[data-theme="dark"] .hero-title span.gradient {
     display: inline-block;
 }
 </style>
-<div class="landing-hero">
+
+<!-- Hero Section -->
+<section class="landing-hero" id="overview">
     <div class="hero-pill">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>Modern Fintech Operations Platform</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>Smarter loan management</span>
     </div>
 
     <h1 class="hero-title">
@@ -39,56 +41,60 @@ html[data-theme="dark"] .hero-title span.gradient {
     </h1>
 
     <p class="hero-desc">
-        A transparent, rule-based loan application and workflow management platform. Streamline applicant submissions, officer ratio evaluations, and executive decisioning in a unified console.
+        A clear, organized way to explore loan products, manage applications, and follow your loan journey with deterministic, rule-based credit evaluations.
     </p>
 
-    <div class="hero-cta-group" style="margin-bottom: 24px;">
+    <div class="hero-cta-group">
         <a href="{{ url_for('auth.signup') }}" class="btn primary">
-            <span>Sign Up / Get Started</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            <span>Get Started / Sign Up</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a href="{{ url_for('auth.login') }}" class="btn">
+        <a href="#features" class="btn secondary">
+            <span>Explore Features</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn outline">
             <span>Log In</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
         </a>
     </div>
 
-    <p class="muted" style="font-size: 13px; margin: 0 auto 42px; position: relative; z-index: 1;">
+    <p class="muted hero-subtext">
         Create your LoanPulse account to apply for and track your loans.
     </p>
-</div>
+</section>
 
-<!-- Product Preview Visual Mockup -->
-<div class="product-preview">
+<!-- Product Preview Visual Mockup (Stripe / Linear Inspired Console) -->
+<div class="product-preview" aria-label="Illustrative application preview">
     <div class="preview-bar">
-        <div class="preview-dots">
+        <div class="preview-dots" aria-hidden="true">
             <span class="preview-dot" style="background: #ef4444;"></span>
             <span class="preview-dot" style="background: #f59e0b;"></span>
             <span class="preview-dot" style="background: #10b981;"></span>
         </div>
-        <span class="muted" style="font-size: 11.5px; font-family: var(--font-mono);">app.loanpulse.io/console</span>
+        <span class="muted preview-url" style="font-size: 11.5px; font-family: var(--font-mono);">app.loanpulse.io/console</span>
         <span class="tag preview-tag">SYSTEM PREVIEW</span>
     </div>
 
     <div class="preview-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div class="preview-header-row">
             <div>
-                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em;">Application #APP-1042</div>
+                <div class="preview-app-id">Application #APP-1042 · Personal Term Loan</div>
                 <div class="preview-app-title">Personal Term Loan Evaluation</div>
             </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="preview-header-tags">
                 <span class="status status-PENDING_MANAGER_REVIEW">Pending Manager Decision</span>
                 <span class="tag" style="background: var(--bg-card);">Rule: STANDARD_CREDIT</span>
             </div>
         </div>
 
-        <div class="grid4" style="margin-bottom: 22px;">
+        <div class="grid4 preview-metrics-grid" style="margin-bottom: 22px;">
             <div class="stat">
                 <span>Requested Principal</span>
                 <b class="preview-stat-num">₹2,50,000</b>
             </div>
             <div class="stat">
-                <span>Monthly Income</span>
+                <span>Monthly Net Income</span>
                 <b class="preview-stat-num">₹65,000</b>
             </div>
             <div class="stat">
@@ -101,73 +107,75 @@ html[data-theme="dark"] .hero-title span.gradient {
             </div>
         </div>
 
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
-                <span style="font-size: 13px; color: var(--text-secondary);">Officer <b>A. Kumar</b> evaluated application · Forwarded to Executive Review</span>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <span class="btn success" style="padding: 5px 12px; font-size: 12px; pointer-events: none;">Approve Loan</span>
-                <span class="btn danger" style="padding: 5px 12px; font-size: 12px; pointer-events: none;">Reject</span>
+        <div class="preview-timeline-box">
+            <div class="preview-timeline-header">
+                <div class="preview-timeline-status">
+                    <span class="preview-timeline-dot"></span>
+                    <span>Officer <b>A. Kumar</b> evaluated application · Forwarded to Executive Review</span>
+                </div>
+                <div class="preview-timeline-actions">
+                    <span class="badge success">Ratio Check Passed</span>
+                    <span class="badge info">Documents Verified</span>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Capabilities Section -->
+<!-- Features Section -->
 <section class="capability-section" id="features">
     <div class="section-head">
         <h2>Core Platform Capabilities</h2>
-        <p class="muted">Engineered strictly around the documented LoanPulse operational workflow.</p>
+        <p class="muted">Engineered strictly around the verified, rule-based LoanPulse lending operations workflow.</p>
     </div>
 
     <div class="capability-grid">
         <div class="capability-card">
-            <div class="capability-icon">
+            <div class="capability-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
             </div>
-            <h3>Application Management</h3>
-            <p>Customers submit structured loan requests with validated income, principal amount, term length, and loan purpose.</p>
+            <h3>Application Tracking</h3>
+            <p>Customers submit structured loan requests with verified income, principal amount, term length, and loan purpose with real-time status visibility.</p>
         </div>
 
         <div class="capability-card">
-            <div class="capability-icon">
+            <div class="capability-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
             </div>
-            <h3>Rule-Based Assessment</h3>
-            <p>Deterministic calculations evaluate eligibility against income thresholds and loan-to-income caps with no opaque AI black boxes.</p>
+            <h3>Deterministic Assessment</h3>
+            <p>Deterministic calculations evaluate eligibility against income thresholds and loan-to-income caps with full transparency and no opaque black boxes.</p>
         </div>
 
         <div class="capability-card">
-            <div class="capability-icon">
+            <div class="capability-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <h3>Role-Based Workflow</h3>
-            <p>Rigorous separation of duties ensures Customers apply, Officers assess, and Managers hold final decision authority.</p>
+            <p>Rigorous separation of duties ensures Customers apply, Officers evaluate ratios, and Managers hold final decision and disbursement authority.</p>
         </div>
 
         <div class="capability-card">
-            <div class="capability-icon">
+            <div class="capability-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
             </div>
-            <h3>Disbursement Tracking</h3>
-            <p>Approved loans transition cleanly through disbursement recording with verified amounts and execution dates.</p>
+            <h3>Loan Product Exploration</h3>
+            <p>Borrowers can explore active loan products with published annual interest rates, minimum and maximum amounts, and defined tenure boundaries.</p>
         </div>
 
         <div class="capability-card">
-            <div class="capability-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <div class="capability-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
             </div>
-            <h3>Lifecycle Notifications</h3>
-            <p>Automated status notifications alert stakeholders whenever an application moves between workflow states.</p>
+            <h3>Document & KYC Submission</h3>
+            <p>Upload required identity and income proofs with clear status tracking (VERIFIED, PENDING, REJECTED) and seamless resubmission support.</p>
         </div>
 
         <div class="capability-card">
-            <div class="capability-icon">
+            <div class="capability-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
             <h3>Transparent Auditing</h3>
-            <p>Every review, assessment ratio, and executive decision is stored with full relational integrity and timestamps.</p>
+            <p>Every review step, assessment ratio, officer note, and manager decision is recorded in audit logs with full relational integrity and timestamps.</p>
         </div>
     </div>
 </section>
@@ -182,32 +190,159 @@ html[data-theme="dark"] .hero-title span.gradient {
     <div class="workflow-pipeline">
         <div class="workflow-step">
             <span class="workflow-step-num">1</span>
-            <h4>Customer Submits</h4>
-            <p>Application saved in SQLite with PENDING_REVIEW state.</p>
+            <h4>Explore & Apply</h4>
+            <p>Select an active loan product, specify amount and tenure, and submit employment details.</p>
         </div>
 
         <div class="workflow-step">
             <span class="workflow-step-num">2</span>
-            <h4>Officer Assesses</h4>
-            <p>Deterministic rules calculate loan-to-income ratios and eligibility.</p>
+            <h4>Document Submission</h4>
+            <p>Upload required identity and income documents with clear review states.</p>
         </div>
 
         <div class="workflow-step">
             <span class="workflow-step-num">3</span>
-            <h4>Manager Decides</h4>
-            <p>Executive review approves or rejects the application.</p>
+            <h4>Officer Assessment</h4>
+            <p>Deterministic credit rules evaluate Debt-to-Income and lending policy thresholds.</p>
         </div>
 
         <div class="workflow-step">
             <span class="workflow-step-num">4</span>
-            <h4>Loan Disburses</h4>
-            <p>Approved loans are recorded as DISBURSED with release date.</p>
+            <h4>Manager Decision</h4>
+            <p>Executive review approves or rejects the application with complete audit logging.</p>
         </div>
 
         <div class="workflow-step">
             <span class="workflow-step-num">5</span>
-            <h4>In-App Alerts</h4>
-            <p>Real-time lifecycle update generated for the borrower.</p>
+            <h4>Disbursement & Alerts</h4>
+            <p>Approved loans progress to recorded disbursement with verified release dates and in-app updates.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Loan Calculator Preview Section -->
+<section class="landing-calculator-section" id="calculator">
+    <div class="section-head">
+        <h2>Interactive Repayment Calculator</h2>
+        <p class="muted">Calculate illustrative monthly payments and total interest using standard reducing-balance amortization.</p>
+    </div>
+
+    <div class="calculator-preview-card">
+        <div class="calculator-card-grid">
+            <div class="calc-inputs-panel">
+                <div class="calc-slider-group">
+                    <div class="calc-slider-header">
+                        <label for="landingCalcAmount" class="calc-slider-label">Loan Amount</label>
+                        <span class="calc-slider-val" id="landingCalcAmountVal">₹2,00,000</span>
+                    </div>
+                    <input type="range" class="calc-slider" id="landingCalcAmount" min="25000" max="1000000" step="5000" value="200000" aria-label="Loan Amount">
+                    <div class="calc-slider-hints">
+                        <span>₹25,000</span>
+                        <span>₹10,00,000</span>
+                    </div>
+                </div>
+
+                <div class="calc-slider-group">
+                    <div class="calc-slider-header">
+                        <label for="landingCalcRate" class="calc-slider-label">Annual Interest Rate</label>
+                        <span class="calc-slider-val" id="landingCalcRateVal">11.5%</span>
+                    </div>
+                    <input type="range" class="calc-slider" id="landingCalcRate" min="8" max="24" step="0.5" value="11.5" aria-label="Annual Interest Rate">
+                    <div class="calc-slider-hints">
+                        <span>8.0% p.a.</span>
+                        <span>24.0% p.a.</span>
+                    </div>
+                </div>
+
+                <div class="calc-slider-group">
+                    <div class="calc-slider-header">
+                        <label for="landingCalcTenure" class="calc-slider-label">Tenure Length</label>
+                        <span class="calc-slider-val" id="landingCalcTenureVal">24 Months</span>
+                    </div>
+                    <input type="range" class="calc-slider" id="landingCalcTenure" min="6" max="60" step="3" value="24" aria-label="Tenure Length in Months">
+                    <div class="calc-slider-hints">
+                        <span>6 Months</span>
+                        <span>60 Months (5 yrs)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-summary-panel">
+                <div class="calc-summary-main">
+                    <div class="calc-summary-label">Estimated Monthly EMI</div>
+                    <div class="calc-summary-amount" id="landingCalcEmi">₹9,381</div>
+                </div>
+
+                <div class="calc-breakdown-details">
+                    <div class="calc-breakdown-row">
+                        <span>Principal Amount:</span>
+                        <b id="landingCalcSummaryPrincipal">₹2,00,000</b>
+                    </div>
+                    <div class="calc-breakdown-row">
+                        <span>Total Interest Payable:</span>
+                        <b id="landingCalcSummaryInterest">₹25,148</b>
+                    </div>
+                    <div class="calc-breakdown-row">
+                        <span>Total Repayment:</span>
+                        <b id="landingCalcSummaryTotal">₹2,25,148</b>
+                    </div>
+                </div>
+
+                <p class="calc-disclaimer">
+                    * Note: This calculation is illustrative and provided for planning purposes. Final interest rate, tenure, and approval are subject to credit underwriting.
+                </p>
+
+                <div class="calc-actions">
+                    <a href="{{ url_for('customer.emi_calculator') }}" class="btn secondary" style="flex: 1; font-size: 12.5px;">
+                        <span>Open Full Calculator</span>
+                    </a>
+                    <a href="{{ url_for('auth.signup') }}" class="btn primary" style="flex: 1; font-size: 12.5px;">
+                        <span>Apply for Loan</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trust & Security Architecture Section -->
+<section class="trust-security-section" id="security">
+    <div class="section-head">
+        <h2>Built on Verified Security & Governance</h2>
+        <p class="muted">Engineered with rigorous architectural controls to protect your data and prevent unauthorized operations.</p>
+    </div>
+
+    <div class="trust-grid">
+        <div class="trust-card">
+            <div class="trust-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            </div>
+            <h3>Tab-Scoped Session Isolation</h3>
+            <p>Every browser tab maintains its own isolated authentication context, preventing session bleeding across roles and active windows.</p>
+        </div>
+
+        <div class="trust-card">
+            <div class="trust-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="2"/></svg>
+            </div>
+            <h3>CSRF & Request Security</h3>
+            <p>All state-modifying requests are protected with cryptographic tokens to safeguard against cross-site request forgery attacks.</p>
+        </div>
+
+        <div class="trust-card">
+            <div class="trust-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/></svg>
+            </div>
+            <h3>Enforced Role Boundaries</h3>
+            <p>Strict server-side decorators enforce RBAC policies: Customers never access staff actions, and Officers cannot execute manager decisions.</p>
+        </div>
+
+        <div class="trust-card">
+            <div class="trust-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="2"/></svg>
+            </div>
+            <h3>Full Audit Trail Integrity</h3>
+            <p>Every review note, ratio assessment, and status change is persisted in append-only audit records with timestamps and actor tracking.</p>
         </div>
     </div>
 </section>
@@ -218,7 +353,98 @@ html[data-theme="dark"] .hero-title span.gradient {
     <p class="muted" style="max-width: 500px; margin: 0 auto 24px;">Apply for a term loan today or sign in to your enterprise operations portal.</p>
     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
         <a href="{{ url_for('auth.signup') }}" class="btn primary" style="padding: 10px 20px;">Sign Up as Customer</a>
+        <a href="{{ url_for('auth.select_role') }}" class="btn secondary" style="padding: 10px 20px;">Select Role Portal</a>
         <a href="{{ url_for('auth.login') }}" class="btn" style="padding: 10px 20px;">Log In</a>
     </div>
 </div>
+
+<!-- Internal Quick Navigation Footer -->
+<nav class="landing-footer-nav" aria-label="Landing page quick links">
+    <div class="landing-footer-col landing-footer-brand">
+        <h4>LoanPulse</h4>
+        <p>A transparent, rule-based loan evaluation and lifecycle management platform for customers, underwriting officers, and credit managers.</p>
+        <div class="muted" style="font-size: 12px; margin-top: 12px; font-family: var(--font-mono);">
+            LoanPulse v1.0 · Deterministic Underwriting
+        </div>
+    </div>
+
+    <div class="landing-footer-col">
+        <h4>Platform</h4>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#features">Core Capabilities</a></li>
+            <li><a href="#how-it-works">Operational Lifecycle</a></li>
+            <li><a href="#calculator">Loan Calculator</a></li>
+            <li><a href="#security">Security & Governance</a></li>
+        </ul>
+    </div>
+
+    <div class="landing-footer-col">
+        <h4>Access & Portals</h4>
+        <ul>
+            <li><a href="{{ url_for('auth.signup') }}">Create Account</a></li>
+            <li><a href="{{ url_for('auth.login_user_view') }}">Customer Sign In</a></li>
+            <li><a href="{{ url_for('auth.login_admin_view') }}">Staff / Admin Sign In</a></li>
+            <li><a href="{{ url_for('auth.select_role') }}">Role Gateway</a></li>
+            <li><a href="{{ url_for('customer.emi_calculator') }}">Dedicated EMI Calculator</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Lightweight Client-Side EMI Calculator Script -->
+<script>
+(function() {
+    var amountSlider = document.getElementById('landingCalcAmount');
+    var rateSlider = document.getElementById('landingCalcRate');
+    var tenureSlider = document.getElementById('landingCalcTenure');
+
+    var amountVal = document.getElementById('landingCalcAmountVal');
+    var rateVal = document.getElementById('landingCalcRateVal');
+    var tenureVal = document.getElementById('landingCalcTenureVal');
+
+    var emiDisplay = document.getElementById('landingCalcEmi');
+    var summaryPrincipal = document.getElementById('landingCalcSummaryPrincipal');
+    var summaryInterest = document.getElementById('landingCalcSummaryInterest');
+    var summaryTotal = document.getElementById('landingCalcSummaryTotal');
+
+    var formatter = new Intl.NumberFormat('en-IN', {
+        maximumFractionDigits: 0
+    });
+
+    function updateCalculator() {
+        if (!amountSlider || !rateSlider || !tenureSlider) return;
+
+        var P = parseFloat(amountSlider.value) || 200000;
+        var annualRate = parseFloat(rateSlider.value) || 11.5;
+        var n = parseInt(tenureSlider.value, 10) || 24;
+
+        if (amountVal) amountVal.textContent = '₹' + formatter.format(P);
+        if (rateVal) rateVal.textContent = annualRate.toFixed(1) + '%';
+        if (tenureVal) tenureVal.textContent = n + ' Months';
+
+        var r = (annualRate / 100) / 12;
+        var emi = 0;
+        if (r === 0) {
+            emi = P / n;
+        } else {
+            var factor = Math.pow(1 + r, n);
+            emi = (P * r * factor) / (factor - 1);
+        }
+
+        var totalPayable = emi * n;
+        var totalInterest = Math.max(0, totalPayable - P);
+
+        if (emiDisplay) emiDisplay.textContent = '₹' + formatter.format(Math.round(emi));
+        if (summaryPrincipal) summaryPrincipal.textContent = '₹' + formatter.format(P);
+        if (summaryInterest) summaryInterest.textContent = '₹' + formatter.format(Math.round(totalInterest));
+        if (summaryTotal) summaryTotal.textContent = '₹' + formatter.format(Math.round(totalPayable));
+    }
+
+    if (amountSlider) amountSlider.addEventListener('input', updateCalculator);
+    if (rateSlider) rateSlider.addEventListener('input', updateCalculator);
+    if (tenureSlider) tenureSlider.addEventListener('input', updateCalculator);
+
+    updateCalculator();
+})();
+</script>
 {% endblock %}

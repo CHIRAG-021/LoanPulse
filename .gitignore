@@ -55,3 +55,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Local temporary screenshots & scratch files
+error.png

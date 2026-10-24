@@ -473,7 +473,10 @@ def create_app(config_name=None) -> Flask:
     def set_security_headers(response):
         """Set cache control and defensive HTTP security headers (LP-VULN-09) and static asset caching."""
         if request.endpoint in ("static", "favicon"):
-            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+            if app.debug:
+                response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            else:
+                response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         else:
             response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
@@ -552,12 +555,13 @@ def create_app(config_name=None) -> Flask:
         return {"unread_notifications_count": unread_count, "current_wid": wid or ""}
 
     # Register blueprints
-    from src.routes import auth_bp, customer_bp, officer_bp, manager_bp, notifications_bp
+    from src.routes import auth_bp, customer_bp, officer_bp, manager_bp, notifications_bp, chatbot_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(customer_bp)
     app.register_blueprint(officer_bp)
     app.register_blueprint(manager_bp)
     app.register_blueprint(notifications_bp)
+    app.register_blueprint(chatbot_bp)
 
     # CLI command to initialize and seed database
     @app.cli.command("init-db")

@@ -7,12 +7,14 @@
     <div class="head">
         <div>
             <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 <span>Apply for a Loan</span>
             </h1>
             <div class="muted">Select a loan product and submit your borrowing request for deterministic policy underwriting.</div>
         </div>
-        <span class="tag">Phase 7 · Product Engine</span>
+        <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
+            Credit Policy Engine
+        </span>
     </div>
 
     <!-- Application Lifecycle Step Indicator -->
@@ -24,23 +26,29 @@
     </div>
 
     {% if errors %}
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 24px; color: #f87171;">
-            <b style="display: block; margin-bottom: 6px; font-size: 13px;">Please correct the following application issues:</b>
-            <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                {% for field_name, err in errors.items() %}
-                    <li><b>{{ field_name|replace('_', ' ')|title }}:</b> {{ err }}</li>
-                {% endfor %}
-            </ul>
+        <div class="alert alert-danger" role="alert" style="margin-bottom: var(--space-6);">
+            <div class="alert-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="alert-content">
+                <b style="display: block; margin-bottom: 4px; font-size: 13.5px;">Please correct the following application issues:</b>
+                <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                    {% for field_name, err in errors.items() %}
+                        <li><b>{{ field_name|replace('_', ' ')|title }}:</b> {{ err }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
     {% endif %}
 
     <form method="POST" action="{{ url_for('customer.new_application') }}" id="application-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <!-- 1. Product Selection Box -->
-        <div class="box" style="padding: 24px; margin-bottom: 24px; border-left: 4px solid #3b82f6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div class="box" style="padding: var(--space-5) var(--space-6); margin-bottom: var(--space-6); border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <h2 style="margin: 0; font-size: 16px;">1. Select Loan Facility</h2>
+                    <h2 class="form-section-title" style="margin: 0;">1. Select Loan Facility</h2>
                     <span class="muted" style="font-size: 12.5px;">Choose an active loan product matching your credit requirements</span>
                 </div>
                 <a href="{{ url_for('customer.emi_calculator') }}" target="_blank" class="btn" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
@@ -49,7 +57,7 @@
                 </a>
             </div>
 
-            <div class="form-group" style="margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: var(--space-4);">
                 <label for="product_id">Loan Product *</label>
                 <select id="product_id" name="product_id" onchange="onProductChange()" style="font-size: 14px; font-weight: 600; padding: 10px 14px;">
                     {% for prod in active_products %}
@@ -72,41 +80,41 @@
             </div>
 
             <!-- Dynamic Product Overview Banner -->
-            <div id="productOverview" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+            <div id="productOverview" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-4);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 12px; flex-wrap: wrap;">
                     <div>
-                        <span id="prodNameDisplay" style="font-size: 15px; font-weight: 700; color: #ffffff;">Personal Loan</span>
+                        <span id="prodNameDisplay" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">Personal Loan</span>
                         <div id="prodDescDisplay" class="muted" style="font-size: 12.5px; margin-top: 3px;">
                             Unsecured multi-purpose personal credit for immediate liquidity and general financing.
                         </div>
                     </div>
-                    <span id="prodRateBadge" style="font-size: 16px; font-weight: 800; color: #38bdf8; font-family: var(--font-mono); background: rgba(56, 189, 248, 0.12); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                    <span id="prodRateBadge" style="font-size: 16px; font-weight: 800; color: var(--primary); font-family: var(--font-mono); background: rgba(37, 99, 235, 0.1); padding: 4px 10px; border-radius: var(--radius-xs); border: 1px solid rgba(37, 99, 235, 0.25);">
                         11.5% p.a.
                     </span>
                 </div>
 
                 <div class="grid4" style="margin-top: 14px; gap: 12px;">
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                    <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Allowed Principal</span>
-                        <div id="prodAmtRange" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                        <div id="prodAmtRange" style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); margin-top: 2px;">
                             ₹10,000 – ₹500,000
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                    <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Permitted Tenure</span>
-                        <div id="prodTenureRange" style="font-size: 12.5px; font-weight: 600; color: #ffffff; margin-top: 2px;">
+                        <div id="prodTenureRange" style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); margin-top: 2px;">
                             12 – 60 months
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                    <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Min Monthly Income</span>
-                        <div id="prodMinIncome" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                        <div id="prodMinIncome" style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); margin-top: 2px;">
                             ₹25,000 / mo
                         </div>
                     </div>
-                    <div style="background: rgba(15, 23, 42, 0.5); padding: 10px; border-radius: 4px;">
+                    <div style="background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
                         <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Max Loan-to-Income</span>
-                        <div id="prodMaxLti" style="font-size: 12.5px; font-weight: 600; color: #ffffff; font-family: var(--font-mono); margin-top: 2px;">
+                        <div id="prodMaxLti" style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); margin-top: 2px;">
                             0.50x annual income
                         </div>
                     </div>
@@ -115,9 +123,9 @@
         </div>
 
         <!-- 2. Application Inputs & Financial Details -->
-        <div class="box" style="padding: 24px; margin-bottom: 24px;">
-            <h2 style="font-size: 16px; margin: 0 0 6px;">2. Loan Amount & Applicant Details</h2>
-            <p class="muted" style="margin-bottom: 20px; font-size: 12.5px;">Specify your borrowing request parameters and income profile.</p>
+        <div class="box" style="padding: var(--space-5) var(--space-6); margin-bottom: var(--space-6);">
+            <h2 class="form-section-title">2. Loan Amount & Applicant Details</h2>
+            <p class="form-section-desc">Specify your borrowing request parameters and income profile.</p>
 
             <div class="grid" style="gap: 20px;">
                 <div>
@@ -130,7 +138,7 @@
 
                 <div>
                     <label>Borrower Profile</label>
-                    <input value="{{ current_user.user_id }} ({{ current_user.full_name }})" readonly style="background: var(--bg-muted); font-weight: 500;">
+                    <input value="{{ current_user.user_id }} ({{ current_user.full_name }})" readonly style="background: var(--bg-muted); font-weight: 500; color: var(--text-secondary);">
                 </div>
 
                 <div>
@@ -220,41 +228,41 @@
         </div>
 
         <!-- 3. Dynamic Live EMI Calculation Card -->
-        <div class="box" style="padding: 24px; margin-bottom: 24px; background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.95) 100%); border-color: rgba(59, 130, 246, 0.4);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div class="emi-preview-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <h2 style="font-size: 15px; margin: 0; color: #ffffff;">Estimated Monthly Installment (EMI)</h2>
+                    <h2 style="font-size: 15px; margin: 0; color: var(--text-primary); font-weight: 700;">Estimated Monthly Installment (EMI)</h2>
                     <span class="muted" style="font-size: 12px;">Real-time reducing-balance amortization preview</span>
                 </div>
-                <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
                     Indicative Estimate
                 </span>
             </div>
 
-            <div class="grid3" style="gap: 16px;">
-                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
-                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Monthly EMI</span>
-                    <div style="font-size: 24px; font-weight: 800; color: #38bdf8; font-family: var(--font-mono); margin-top: 4px;">
+            <div class="emi-preview-grid">
+                <div class="emi-preview-tile">
+                    <span class="emi-preview-tile-label">Estimated Monthly EMI</span>
+                    <div class="emi-preview-tile-val">
                         ₹<span id="previewEmi">9,368.62</span>
                     </div>
                 </div>
 
-                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
-                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Estimated Total Interest</span>
-                    <div style="font-size: 18px; font-weight: 700; color: #ffffff; font-family: var(--font-mono); margin-top: 8px;">
+                <div class="emi-preview-tile">
+                    <span class="emi-preview-tile-label">Estimated Total Interest</span>
+                    <div class="emi-preview-tile-val" style="color: var(--text-primary); font-size: 18px; margin-top: 8px;">
                         ₹<span id="previewInterest">24,846.88</span>
                     </div>
                 </div>
 
-                <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px;">
-                    <span class="muted" style="font-size: 11px; text-transform: uppercase;">Total Repayment Obligation</span>
-                    <div style="font-size: 18px; font-weight: 700; color: #34d399; font-family: var(--font-mono); margin-top: 8px;">
+                <div class="emi-preview-tile">
+                    <span class="emi-preview-tile-label">Total Repayment Obligation</span>
+                    <div class="emi-preview-tile-val highlight" style="font-size: 18px; margin-top: 8px;">
                         ₹<span id="previewPayable">224,846.88</span>
                     </div>
                 </div>
             </div>
 
-            <div class="muted" style="font-size: 11px; margin-top: 12px;">
+            <div class="muted" style="font-size: 11px; margin-top: var(--space-3);">
                 * Calculated using standard formula: <code>EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ - 1)</code>. Final approved repayment schedule will be determined during officer underwriting.
             </div>
         </div>
@@ -265,7 +273,7 @@
 
         <div class="actions" style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
             <a href="{{ url_for('customer.dashboard') }}" class="btn" style="padding: 10px 20px;">Cancel</a>
-            <button type="submit" name="action" value="draft" class="btn" style="padding: 10px 18px; border-color: rgba(148, 163, 184, 0.4);">
+            <button type="submit" name="action" value="draft" class="btn" style="padding: 10px 18px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                 <span>Save as Draft</span>
             </button>

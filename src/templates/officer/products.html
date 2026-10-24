@@ -4,15 +4,23 @@
 
 {% block content %}
 <section class="screen">
+    <!-- Header / Breadcrumbs -->
     <div class="head">
         <div>
-            <h1>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="badge primary">Catalog</span>
+                <span style="color: var(--text-muted); font-size: 12px;">/</span>
+                <span class="muted" style="font-size: 12px;">Underwriting Products</span>
+            </div>
+            <h1 style="display: flex; align-items: center; gap: 10px; margin: 0 0 6px;">
+                <div class="officer-avatar-icon" style="background: var(--primary-bg); color: var(--primary); border-color: var(--primary-border); width: 34px; height: 34px; border-radius: var(--radius-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
                 <span>Loan Product Directory Reference</span>
             </h1>
             <div class="muted">Active lending products and underwriting criteria available for borrower applications.</div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh products">
                 <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -20,63 +28,70 @@
                 </svg>
                 <span>Refresh</span>
             </button>
-            <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
-                <span>← Loan Queue</span>
+            <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                <span>Loan Queue</span>
             </a>
         </div>
     </div>
 
     <!-- Active Products Grid -->
-    <div class="product-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 20px;">
-        {% for p in products %}
-            <div class="box" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid #34d399;">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                        <div>
-                            <h3 style="margin: 0; font-size: 16px; color: #ffffff;">{{ p.product_name }}</h3>
-                            <span style="font-family: var(--font-mono); font-size: 11px; color: #60a5fa;">{{ p.product_code }}</span>
+    {% if products %}
+        <div class="product-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px;">
+            {% for p in products %}
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--primary); padding: 22px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 10px;">
+                            <div>
+                                <h3 style="margin: 0 0 4px; font-size: 16px; color: var(--text-primary); font-weight: 700;">{{ p.product_name }}</h3>
+                                <span class="badge info" style="font-family: var(--font-mono); font-size: 11px;">{{ p.product_code }}</span>
+                            </div>
+                            <span class="badge success" style="font-weight: 700; font-size: 11px;">ACTIVE</span>
                         </div>
-                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 700;">ACTIVE</span>
+
+                        <p class="muted" style="font-size: 12.5px; line-height: 1.5; margin-bottom: 18px;">
+                            {{ p.description or "Configured lending facility for applicant financing." }}
+                        </p>
+
+                        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+                            <div>
+                                <span class="muted" style="font-size: 10.5px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; display: block; margin-bottom: 2px;">Amount Range</span>
+                                <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); font-family: var(--font-mono);">
+                                    ₹{{ "{:,.0f}".format(p.min_amount) }} - ₹{{ "{:,.0f}".format(p.max_amount) }}
+                                </div>
+                            </div>
+                            <div>
+                                <span class="muted" style="font-size: 10.5px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; display: block; margin-bottom: 2px;">Tenure</span>
+                                <div style="font-weight: 700; font-size: 13px; color: var(--text-primary);">
+                                    {{ p.min_term_months }} – {{ p.max_term_months }} mos
+                                </div>
+                            </div>
+                            <div>
+                                <span class="muted" style="font-size: 10.5px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; display: block; margin-bottom: 2px;">Interest Rate</span>
+                                <div style="font-weight: 700; font-size: 13.5px; color: var(--primary); font-family: var(--font-mono);">
+                                    {{ p.annual_interest_rate }}% p.a.
+                                </div>
+                            </div>
+                            <div>
+                                <span class="muted" style="font-size: 10.5px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; display: block; margin-bottom: 2px;">Min Income</span>
+                                <div style="font-weight: 700; font-size: 13px; color: var(--text-primary); font-family: var(--font-mono);">
+                                    ₹{{ "{:,.0f}".format(p.min_monthly_income) }}/mo
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <p class="muted" style="font-size: 12.5px; line-height: 1.5; margin-bottom: 16px;">
-                        {{ p.description or "Configured lending facility for applicant financing." }}
-                    </p>
-
-                    <div style="background: var(--bg-elevated); border-radius: var(--radius-sm); padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                        <div>
-                            <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Amount Range</span>
-                            <div style="font-weight: 600; font-size: 13px; color: #ffffff; font-family: var(--font-mono);">
-                                ₹{{ "{:,.0f}".format(p.min_amount) }} - ₹{{ "{:,.0f}".format(p.max_amount) }}
-                            </div>
-                        </div>
-                        <div>
-                            <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Tenure</span>
-                            <div style="font-weight: 600; font-size: 13px; color: #ffffff;">
-                                {{ p.min_term_months }} – {{ p.max_term_months }} mos
-                            </div>
-                        </div>
-                        <div>
-                            <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Interest Rate</span>
-                            <div style="font-weight: 700; font-size: 14px; color: #38bdf8; font-family: var(--font-mono);">
-                                {{ p.annual_interest_rate }}% p.a.
-                            </div>
-                        </div>
-                        <div>
-                            <span class="muted" style="font-size: 10.5px; text-transform: uppercase;">Min Income</span>
-                            <div style="font-weight: 600; font-size: 13px; color: #ffffff; font-family: var(--font-mono);">
-                                ₹{{ "{:,.0f}".format(p.min_monthly_income) }}/mo
-                            </div>
-                        </div>
+                    <div style="padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <span class="muted" style="font-size: 11.5px;">Max LTI Ratio: <b style="color: var(--text-primary); font-family: var(--font-mono);">{{ p.max_loan_to_income_ratio }}x</b></span>
+                        <span class="muted" style="font-size: 11px; font-family: var(--font-mono);">Product #{{ p.product_id }}</span>
                     </div>
                 </div>
-
-                <div style="padding-top: 10px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                    <span class="muted" style="font-size: 11px;">Max LTI Ratio: <b>{{ p.max_loan_to_income_ratio }}x</b></span>
-                    <span class="muted" style="font-size: 11px;">Product #{{ p.product_id }}</span>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="padding: 48px 24px; text-align: center;">
+            <p class="muted" style="margin: 0; font-size: 13.5px;">No active loan products configured.</p>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

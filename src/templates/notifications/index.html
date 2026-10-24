@@ -7,12 +7,12 @@
     <div class="head">
         <div>
             <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                 <span>Notifications & Activity Log</span>
             </h1>
             <div class="muted">Real-time status transition history and lifecycle milestone audit log.</div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh notifications">
                 <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -20,32 +20,35 @@
                 </svg>
                 <span>Refresh</span>
             </button>
-            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">US-07 · BR-07</span>
+            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">US-07 · BR-07</span>
         </div>
     </div>
 
     <!-- Notification Overview Metrics with REQUIRED DOM ID "unreadCount" -->
-    <div class="grid3" style="margin-bottom: 24px;">
+    <div class="grid3" style="margin-bottom: var(--space-6);">
         <div class="stat">
             <span>Unread Notifications</span>
-            <b id="unreadCount" style="color: {% if unread_count > 0 %}#60a5fa{% else %}var(--text-primary){% endif %};">{{ unread_count }}</b>
+            <b id="unreadCount" style="color: {% if unread_count > 0 %}var(--primary){% else %}var(--text-primary){% endif %};">{{ unread_count }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Pending action notices</div>
         </div>
         <div class="stat">
             <span>Total Updates</span>
-            <b>{{ notifications|length }}</b>
+            <b style="color: var(--text-primary);">{{ notifications|length }}</b>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Lifecycle events recorded</div>
         </div>
         <div class="stat">
             <span>Active Persona Role</span>
-            <b style="font-size: 16px; margin-top: 10px;">
+            <div style="margin-top: 10px;">
                 <span class="role-pill role-pill-{{ current_user.role }}">{{ current_user.role }}</span>
-            </b>
+            </div>
+            <div class="muted" style="font-size: 11px; margin-top: 4px;">Access scope level</div>
         </div>
     </div>
 
     <div class="box" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <!-- REQUIRED HEADING for TC-21: Status Updates History -->
-            <h2 style="margin: 0; font-size: 15px;">Status Updates History</h2>
+            <h2 style="margin: 0; font-size: 15px; color: var(--text-primary);">Status Updates History</h2>
             <span class="muted" style="font-size: 12px;">{{ notifications|length }} lifecycle records</span>
         </div>
 
@@ -64,15 +67,15 @@
                     </thead>
                     <tbody id="notificationRows">
                         {% for n in notifications %}
-                            <tr style="{% if not n.is_read %}background: rgba(59, 130, 246, 0.08); font-weight: 500;{% endif %}">
+                            <tr style="{% if not n.is_read %}background: rgba(59, 130, 246, 0.05); font-weight: 500;{% endif %}">
                                 <td class="muted" style="font-size: 12px; white-space: nowrap;">{{ n.created_at }}</td>
                                 <td>
                                     {% if current_user.role == 'CUSTOMER' %}
-                                        <a href="{{ url_for('customer.application_status', application_id=n.application_id) }}" style="color: #60a5fa; text-decoration: none; font-weight: 700; font-family: var(--font-mono);">
+                                        <a href="{{ url_for('customer.application_status', application_id=n.application_id) }}" style="color: var(--primary); text-decoration: none; font-weight: 700; font-family: var(--font-mono);">
                                             {{ n.application_id }}
                                         </a>
                                     {% else %}
-                                        <a href="{{ url_for('officer.review_application', application_id=n.application_id) }}" style="color: #60a5fa; text-decoration: none; font-weight: 700; font-family: var(--font-mono);">
+                                        <a href="{{ url_for('officer.review_application', application_id=n.application_id) }}" style="color: var(--primary); text-decoration: none; font-weight: 700; font-family: var(--font-mono);">
                                             {{ n.application_id }}
                                         </a>
                                     {% endif %}
@@ -92,7 +95,7 @@
                                     {% if n.is_read %}
                                         <span class="tag" style="background: var(--bg-muted); color: var(--text-muted); font-size: 10px;">Read</span>
                                     {% else %}
-                                        <span class="tag" style="background: rgba(59, 130, 246, 0.2); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-size: 10px; font-weight: 700;">New</span>
+                                        <span class="tag" style="background: rgba(59, 130, 246, 0.2); color: var(--primary); border-color: rgba(59, 130, 246, 0.4); font-size: 10px; font-weight: 700;">New</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -101,17 +104,17 @@
                 </table>
             </div>
         {% else %}
-            <div class="placeholder" style="padding: 54px 20px;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: #60a5fa; margin-bottom: 12px;">
+            <div class="placeholder empty-state" style="padding: 54px 20px;">
+                <div class="empty-state-icon" style="width: 48px; height: 48px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); margin: 0 auto 12px;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                 </div>
-                <h3 style="margin: 0 0 4px; font-size: 16px; color: #ffffff;">No Updates Found</h3>
-                <p class="muted" style="margin: 0;">No notifications or status transition records found.</p>
+                <h3 class="empty-state-title" style="margin: 0 0 4px; font-size: 16px; color: var(--text-primary);">No Updates Found</h3>
+                <p class="muted empty-state-description" style="margin: 0;">No notifications or status transition records found.</p>
             </div>
         {% endif %}
     </div>
 
-    <div class="actions" style="margin-top: 24px;">
+    <div class="actions" style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
         <form method="POST" action="{{ url_for('notifications.mark_read') }}" style="display: inline;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn primary">

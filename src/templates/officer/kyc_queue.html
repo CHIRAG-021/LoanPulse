@@ -4,15 +4,23 @@
 
 {% block content %}
 <section class="screen">
+    <!-- Header / Breadcrumbs -->
     <div class="head">
         <div>
-            <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span class="badge info">Compliance</span>
+                <span style="color: var(--text-muted); font-size: 12px;">/</span>
+                <span class="muted" style="font-size: 12px;">Customer Verification</span>
+            </div>
+            <h1 style="display: flex; align-items: center; gap: 10px; margin: 0 0 6px;">
+                <div class="officer-avatar-icon" style="background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); width: 34px; height: 34px; border-radius: var(--radius-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
                 <span>KYC Verification Workspace</span>
             </h1>
             <div class="muted">Review customer identification documents, verify authenticity, and approve KYC credentials.</div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh KYC queue">
                 <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -20,44 +28,57 @@
                 </svg>
                 <span>Refresh</span>
             </button>
-            <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
-                <span>Loan Queue →</span>
+            <a href="{{ url_for('officer.queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>Loan Queue</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
             </a>
         </div>
     </div>
 
     <!-- KYC Metrics Banner -->
-    <div class="grid4" style="margin-bottom: 26px;">
-        <div class="stat">
-            <span>Total Customers</span>
-            <b style="color: #ffffff;">{{ total_customers }}</b>
-            <div class="muted" style="font-size: 11px; margin-top: 6px;">Registered customer base</div>
+    <div class="grid4" style="margin-bottom: 24px; gap: 16px;">
+        <div class="stat" style="border-radius: var(--radius-md); padding: 18px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Total Customers</span>
+                <span style="color: var(--primary); display: flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            </div>
+            <b style="font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary);">{{ total_customers }}</b>
+            <div class="muted" style="font-size: 11.5px; margin-top: 6px;">Registered customer base</div>
         </div>
-        <div class="stat">
-            <span>Pending Review</span>
-            <b style="color: #fbbf24;">{{ pending_kyc_count }}</b>
-            <div class="muted" style="font-size: 11px; margin-top: 6px;">Awaiting officer decision</div>
+        <div class="stat" style="border-radius: var(--radius-md); padding: 18px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Pending Review</span>
+                <span style="color: var(--warning); display: flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+            </div>
+            <b style="font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--warning-text);">{{ pending_kyc_count }}</b>
+            <div class="muted" style="font-size: 11.5px; margin-top: 6px;">Awaiting officer decision</div>
         </div>
-        <div class="stat">
-            <span>Verified Customers</span>
-            <b style="color: #34d399;">{{ verified_kyc_count }}</b>
-            <div class="muted" style="font-size: 11px; margin-top: 6px;">Credentials approved</div>
+        <div class="stat" style="border-radius: var(--radius-md); padding: 18px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Verified Customers</span>
+                <span style="color: var(--success); display: flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></span>
+            </div>
+            <b style="font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--success-text);">{{ verified_kyc_count }}</b>
+            <div class="muted" style="font-size: 11.5px; margin-top: 6px;">Credentials approved</div>
         </div>
-        <div class="stat">
-            <span>Rejected KYCs</span>
-            <b style="color: #f87171;">{{ rejected_kyc_count }}</b>
-            <div class="muted" style="font-size: 11px; margin-top: 6px;">Action required by user</div>
+        <div class="stat" style="border-radius: var(--radius-md); padding: 18px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);">Rejected KYCs</span>
+                <span style="color: var(--danger); display: flex;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+            </div>
+            <b style="font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--danger-text);">{{ rejected_kyc_count }}</b>
+            <div class="muted" style="font-size: 11.5px; margin-top: 6px;">Action required by user</div>
         </div>
     </div>
 
-    <!-- Customer Queue Table -->
-    <div class="box" style="padding: 0; overflow: hidden;">
+    <!-- Customer Queue Table Card -->
+    <div class="card" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <div>
-                <h2 style="margin: 0; font-size: 16px;">Customer Verification Queue</h2>
+                <h2 style="margin: 0; font-size: 15px;">Customer Verification Queue</h2>
                 <span class="muted" style="font-size: 12px;">Customers prioritized by verification status</span>
             </div>
-            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+            <span class="badge info" style="font-size: 11.5px;">
                 {{ customers|length }} Customers
             </span>
         </div>
@@ -77,38 +98,59 @@
                     </thead>
                     <tbody>
                         {% for c in customers %}
-                            <tr style="{% if c.kyc_status == 'PENDING' %}background: rgba(245, 158, 11, 0.04);{% endif %}">
+                            <tr style="{% if c.kyc_status == 'PENDING' %}background: var(--warning-bg);{% endif %}">
                                 <td>
-                                    <div style="font-weight: 600; color: #ffffff;">{{ c.full_name }}</div>
-                                    <div class="muted" style="font-size: 11px; font-family: var(--font-mono);">ID: #{{ c.user_id }}</div>
-                                </td>
-                                <td class="muted" style="font-size: 12.5px;">{{ c.email }}</td>
-                                <td>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <div style="width: 50px; height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden;">
-                                            <div style="width: {{ c.profile_completion_percentage }}%; height: 100%; background: {% if c.profile_completion_percentage >= 80 %}#10b981{% elif c.profile_completion_percentage >= 50 %}#f59e0b{% else %}#3b82f6{% endif %};"></div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="officer-avatar-icon" style="width: 32px; height: 32px; font-size: 12px; flex-shrink: 0;">
+                                            {{ c.full_name[:2]|upper }}
                                         </div>
-                                        <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">{{ c.profile_completion_percentage }}%</span>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--text-primary); font-size: 13.5px;">{{ c.full_name }}</div>
+                                            <div class="muted" style="font-size: 11px; font-family: var(--font-mono);">ID: #{{ c.user_id }}</div>
+                                        </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="tag" style="font-size: 11px;">
+                                    <span class="muted" style="font-size: 12.5px; font-family: var(--font-mono);">{{ c.email }}</span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 54px; height: 6px; background: var(--bg-muted); border-radius: var(--radius-full); overflow: hidden;">
+                                            <div style="width: {{ c.profile_completion_percentage }}%; height: 100%; background: {% if c.profile_completion_percentage >= 80 %}var(--success){% elif c.profile_completion_percentage >= 50 %}var(--warning){% else %}var(--primary){% endif %}; border-radius: var(--radius-full);"></div>
+                                        </div>
+                                        <span style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); font-weight: 600;">{{ c.profile_completion_percentage }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="tag" style="font-size: 11px; padding: 2px 8px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                         {{ c.documents|length }} files
                                     </span>
                                 </td>
                                 <td>
                                     {% if c.kyc_status == 'VERIFIED' %}
-                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">✓ VERIFIED</span>
+                                        <span class="badge success" style="font-weight: 700; font-size: 11px;">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                            VERIFIED
+                                        </span>
                                     {% elif c.kyc_status == 'PENDING' %}
-                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">⏳ PENDING</span>
+                                        <span class="badge warning" style="font-weight: 700; font-size: 11px;">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            PENDING
+                                        </span>
                                     {% elif c.kyc_status == 'REJECTED' %}
-                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">✕ REJECTED</span>
+                                        <span class="badge danger" style="font-weight: 700; font-size: 11px;">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                            REJECTED
+                                        </span>
                                     {% else %}
-                                        <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700; font-size: 11px;">NOT STARTED</span>
+                                        <span class="badge info" style="font-weight: 700; font-size: 11px;">
+                                            NOT STARTED
+                                        </span>
                                     {% endif %}
                                 </td>
                                 <td style="text-align: right;">
-                                    <a href="{{ url_for('officer.kyc_review', customer_id=c.user_id) }}" class="btn {% if c.kyc_status == 'PENDING' %}primary{% endif %}" style="padding: 5px 14px; font-size: 12px;">
+                                    <a href="{{ url_for('officer.kyc_review', customer_id=c.user_id) }}" class="btn {% if c.kyc_status == 'PENDING' %}primary{% endif %}" style="padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
                                         <span>Review KYC</span>
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                                     </a>
@@ -119,8 +161,8 @@
                 </table>
             </div>
         {% else %}
-            <div class="placeholder" style="padding: 48px 24px;">
-                <p class="muted">No customers found in database.</p>
+            <div class="placeholder" style="padding: 48px 24px; text-align: center;">
+                <p class="muted" style="margin: 0; font-size: 13.5px;">No customers found in database.</p>
             </div>
         {% endif %}
     </div>

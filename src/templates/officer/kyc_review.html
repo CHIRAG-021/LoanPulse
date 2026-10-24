@@ -3,88 +3,121 @@
 {% block title %}LoanPulse — Officer KYC Review for {{ customer.full_name }}{% endblock %}
 
 {% block content %}
-<section class="screen" style="max-width: 980px; margin: 0 auto;">
+<section class="screen" style="max-width: 1040px; margin: 0 auto;">
+    <!-- Breadcrumbs & Header -->
     <div class="head">
         <div>
-            <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <a href="{{ url_for('officer.kyc_queue') }}" class="muted" style="font-size: 12px; text-decoration: none;">KYC Workspace</a>
+                <span style="color: var(--text-muted); font-size: 12px;">/</span>
+                <span class="badge info">Verification</span>
+            </div>
+            <h1 style="display: flex; align-items: center; gap: 10px; margin: 0 0 6px;">
+                <div class="officer-avatar-icon" style="background: var(--info-bg); color: var(--info-text); border-color: var(--info-border); width: 34px; height: 34px; border-radius: var(--radius-sm);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
                 <span>KYC Verification: {{ customer.full_name }}</span>
             </h1>
             <div class="muted">Review uploaded customer documents, authenticate borrower identity, and record credit KYC decision.</div>
         </div>
-        <a href="{{ url_for('officer.kyc_queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px;">
-            <span>← Back to KYC Queue</span>
-        </a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="{{ url_for('officer.kyc_queue') }}" class="btn" style="padding: 8px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                <span>Back to KYC Queue</span>
+            </a>
+        </div>
     </div>
 
     <!-- Customer Overview Card -->
-    <div class="box" style="margin-bottom: 24px; padding: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 18px;">
-            <div>
-                <h2 style="margin: 0 0 4px; font-size: 18px;">Customer Profile Details</h2>
-                <div class="muted" style="font-size: 12.5px;">Account: <b>{{ customer.email }}</b> · User ID: <b>#{{ customer.user_id }}</b></div>
+    <div class="card" style="margin-bottom: 24px; padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="officer-avatar-icon" style="width: 44px; height: 44px; font-size: 16px; flex-shrink: 0;">
+                    {{ customer.full_name[:2]|upper }}
+                </div>
+                <div>
+                    <h2 style="margin: 0 0 4px; font-size: 17px;">Customer Profile Details</h2>
+                    <div class="muted" style="font-size: 12.5px;">Account: <b style="color: var(--text-primary); font-family: var(--font-mono);">{{ customer.email }}</b> · User ID: <b style="color: var(--primary); font-family: var(--font-mono);">#{{ customer.user_id }}</b></div>
+                </div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span class="muted" style="font-size: 12px;">KYC Status:</span>
                 {% if customer.kyc_status == 'VERIFIED' %}
-                    <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">✓ VERIFIED</span>
+                    <span class="badge success" style="font-weight: 700; font-size: 12px; padding: 4px 12px;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        VERIFIED
+                    </span>
                 {% elif customer.kyc_status == 'PENDING' %}
-                    <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">⏳ PENDING REVIEW</span>
+                    <span class="badge warning" style="font-weight: 700; font-size: 12px; padding: 4px 12px;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        PENDING REVIEW
+                    </span>
                 {% elif customer.kyc_status == 'REJECTED' %}
-                    <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">✕ REJECTED</span>
+                    <span class="badge danger" style="font-weight: 700; font-size: 12px; padding: 4px 12px;">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        REJECTED
+                    </span>
                 {% else %}
-                    <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">NOT STARTED</span>
+                    <span class="badge info" style="font-weight: 700; font-size: 12px; padding: 4px 12px;">NOT STARTED</span>
                 {% endif %}
             </div>
         </div>
 
         {% if customer.kyc_rejection_reason %}
-            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 18px; margin-bottom: 20px;">
-                <b style="color: #f87171; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Previous Rejection Reason:</b>
-                <div style="color: #fca5a5; font-size: 13.5px; margin-top: 4px;">{{ customer.kyc_rejection_reason }}</div>
+            <div style="background: var(--danger-bg); border: 1px solid var(--danger-border); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <b style="color: var(--danger-text); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Previous Rejection Reason:</b>
+                </div>
+                <div style="color: var(--danger-text); font-size: 13.5px; margin-top: 6px; padding-left: 24px; line-height: 1.5;">{{ customer.kyc_rejection_reason }}</div>
             </div>
         {% endif %}
 
-        <div class="grid3" style="gap: 18px; font-size: 13px;">
+        <div class="grid3" style="gap: 20px; font-size: 13px;">
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Phone Number</span>
-                <b style="color: #ffffff;">{{ customer.phone_number or 'Not Provided' }}</b>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Phone Number</span>
+                <b style="color: var(--text-primary); font-family: var(--font-mono);">{{ customer.phone_number or 'Not Provided' }}</b>
             </div>
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Date of Birth</span>
-                <b style="color: #ffffff;">{{ customer.date_of_birth or 'Not Provided' }}</b>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Date of Birth</span>
+                <b style="color: var(--text-primary); font-family: var(--font-mono);">{{ customer.date_of_birth or 'Not Provided' }}</b>
             </div>
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Profile Completeness</span>
-                <b style="color: #60a5fa;">{{ customer.profile_completion_percentage }}%</b>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Profile Completeness</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 60px; height: 6px; background: var(--bg-muted); border-radius: var(--radius-full); overflow: hidden;">
+                        <div style="width: {{ customer.profile_completion_percentage }}%; height: 100%; background: {% if customer.profile_completion_percentage >= 80 %}var(--success){% elif customer.profile_completion_percentage >= 50 %}var(--warning){% else %}var(--primary){% endif %};"></div>
+                    </div>
+                    <b style="color: var(--primary); font-family: var(--font-mono);">{{ customer.profile_completion_percentage }}%</b>
+                </div>
             </div>
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Residential Address</span>
-                <span style="color: var(--text-secondary);">{{ customer.address or 'Not Provided' }}</span>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Residential Address</span>
+                <span style="color: var(--text-secondary); line-height: 1.4;">{{ customer.address or 'Not Provided' }}</span>
             </div>
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">City / State</span>
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">City / State</span>
                 <span style="color: var(--text-secondary);">{{ customer.city or '—' }}, {{ customer.state or '—' }}</span>
             </div>
             <div>
-                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase;">Employment & Income</span>
-                <span style="color: #ffffff;">
+                <span class="muted" style="display: block; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 4px;">Employment & Income</span>
+                <span style="color: var(--text-primary); font-weight: 600;">
                     {{ customer.employment_type or 'Not Specified' }}
-                    {% if customer.employer_name %}({{ customer.employer_name }}){% endif %}
-                    {% if customer.monthly_income %}· ₹{{ '{:,.2f}'.format(customer.monthly_income) }}/mo{% endif %}
+                    {% if customer.employer_name %}<span style="color: var(--text-secondary); font-weight: 400;">({{ customer.employer_name }})</span>{% endif %}
+                    {% if customer.monthly_income %}<span style="color: var(--success-text); font-family: var(--font-mono);"> · ₹{{ '{:,.2f}'.format(customer.monthly_income) }}/mo</span>{% endif %}
                 </span>
             </div>
         </div>
     </div>
 
-    <!-- Uploaded Documents Review Table -->
-    <div class="box" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+    <!-- Uploaded Documents Review Table Card -->
+    <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <div>
-                <h2 style="margin: 0; font-size: 16px;">Submitted Verification Documents</h2>
+                <h2 style="margin: 0; font-size: 15px;">Submitted Verification Documents</h2>
                 <span class="muted" style="font-size: 12px;">Verify credentials against policy standards</span>
             </div>
-            <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+            <span class="badge info" style="font-size: 11.5px;">
                 {{ documents|length }} Files
             </span>
         </div>
@@ -106,32 +139,32 @@
                         {% for doc in documents %}
                             <tr>
                                 <td>
-                                    <span style="font-weight: 600; color: #ffffff;">
+                                    <span style="font-weight: 600; color: var(--text-primary); font-size: 13px;">
                                         {% if doc.document_type == 'IDENTITY_PROOF' %}Identity Proof{% elif doc.document_type == 'ADDRESS_PROOF' %}Address Proof{% else %}Income Proof{% endif %}
                                     </span>
                                 </td>
                                 <td>
                                     <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">{{ doc.original_filename }}</span>
                                 </td>
-                                <td class="muted" style="font-size: 12px;">
+                                <td class="muted" style="font-size: 12px; font-family: var(--font-mono);">
                                     {% if doc.file_size < 1048576 %}
                                         {{ (doc.file_size / 1024)|round(1) }} KB
                                     {% else %}
                                         {{ (doc.file_size / 1048576)|round(2) }} MB
                                     {% endif %}
                                 </td>
-                                <td class="muted" style="font-size: 12px;">{{ doc.uploaded_at }}</td>
+                                <td class="muted" style="font-size: 12px; font-family: var(--font-mono);">{{ doc.uploaded_at }}</td>
                                 <td>
                                     {% if doc.verification_status == 'VERIFIED' %}
-                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">VERIFIED</span>
+                                        <span class="badge success" style="font-weight: 700; font-size: 11px;">VERIFIED</span>
                                     {% elif doc.verification_status == 'REJECTED' %}
-                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">REJECTED</span>
+                                        <span class="badge danger" style="font-weight: 700; font-size: 11px;">REJECTED</span>
                                     {% else %}
-                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">PENDING</span>
+                                        <span class="badge warning" style="font-weight: 700; font-size: 11px;">PENDING</span>
                                     {% endif %}
                                 </td>
                                 <td style="text-align: right;">
-                                    <a href="{{ url_for('customer.download_document', document_id=doc.document_id) }}" class="btn primary" style="padding: 5px 12px; font-size: 12px;">
+                                    <a href="{{ url_for('customer.download_document', document_id=doc.document_id) }}" class="btn primary" style="padding: 5px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                         <span>Download & Inspect</span>
                                     </a>
@@ -142,31 +175,36 @@
                 </table>
             </div>
         {% else %}
-            <div class="placeholder" style="padding: 40px 20px;">
+            <div class="placeholder" style="padding: 40px 20px; text-align: center;">
                 <p class="muted" style="margin: 0;">No documents uploaded by this customer yet.</p>
             </div>
         {% endif %}
     </div>
 
-    <!-- Officer Decision Form -->
-    <div class="box" style="padding: 26px;">
-        <h2 style="margin: 0 0 4px; font-size: 17px;">Record KYC Decision</h2>
+    <!-- Officer Decision Form Card -->
+    <div class="card" style="padding: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+            <div style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--info-text); display: flex; align-items: center; justify-content: center;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <h2 style="margin: 0; font-size: 16px;">Record KYC Decision</h2>
+        </div>
         <p class="muted" style="margin-bottom: 20px; font-size: 13px;">Review outcomes trigger customer notifications and update underwriting qualification.</p>
 
         <form method="POST" action="{{ url_for('officer.kyc_review', customer_id=customer.user_id) }}" id="kyc-decision-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div style="margin-bottom: 20px;">
-                <label for="rejection_reason">Rejection Reason <span class="muted" style="font-weight: normal;">(Required only if rejecting KYC)</span></label>
-                <textarea id="rejection_reason" name="rejection_reason" rows="3" placeholder="Provide specific feedback to the customer (e.g. Identity document expired, address document illegible, salary slip missing company seal)..." style="width: 100%;"></textarea>
+                <label for="rejection_reason" style="font-weight: 600; font-size: 12.5px; margin-bottom: 6px; display: block;">Rejection Reason <span class="muted" style="font-weight: normal;">(Required only if rejecting KYC)</span></label>
+                <textarea id="rejection_reason" name="rejection_reason" rows="3" placeholder="Provide specific feedback to the customer (e.g. Identity document expired, address document illegible, salary slip missing company seal)..." style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); padding: 10px 14px; font-size: 13px; line-height: 1.5; font-family: inherit;"></textarea>
             </div>
 
-            <div style="display: flex; gap: 14px; align-items: center; justify-content: flex-end;">
-                <button type="submit" name="action" value="REJECT" onclick="return validateRejection();" class="btn" style="padding: 10px 22px; font-size: 13px; color: #f87171; border-color: rgba(239, 68, 68, 0.4);">
+            <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+                <button type="submit" name="action" value="REJECT" onclick="return validateRejection();" class="btn" style="padding: 10px 20px; font-size: 13px; font-weight: 600; color: var(--danger-text); border-color: var(--danger-border); display: inline-flex; align-items: center; gap: 6px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                     <span>Reject KYC</span>
                 </button>
-                <button type="submit" name="action" value="VERIFY" class="btn primary" style="padding: 10px 24px; font-size: 14px; font-weight: 700; background: #059669; border-color: #10b981;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <button type="submit" name="action" value="VERIFY" class="btn success" style="padding: 10px 22px; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>Approve & Verify KYC</span>
                 </button>
             </div>

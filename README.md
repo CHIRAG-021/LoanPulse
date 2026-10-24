@@ -222,4 +222,6 @@ Start with:
 6. `docs/09_data_design.md`
 7. `docs/tech_stack.md`
 8. `docs/wireframe.html`
-9. `CLAUDE.md`
+9. `docs/PHASE_3_SHARED_COMPONENTS.md`
+10. `docs/CHANGELOG.md`
+11. `CLAUDE.md`

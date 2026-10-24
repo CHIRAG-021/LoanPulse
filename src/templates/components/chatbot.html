@@ -1,0 +1,122 @@
+{# Reusable Customer Support Robot Chatbot Widget (LoanPulse) #}
+<div id="lpChatbotWidget" class="lp-chatbot-widget" data-turbo="false" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999; margin: 0; padding: 0;">
+    <!-- Welcome Teaser Speech Bubble (Hidden by default; shown gently after delay) -->
+    <div id="lpChatbotTeaser" class="lp-chatbot-teaser" role="tooltip" aria-hidden="true" style="display: none;">
+        <span class="lp-chatbot-teaser-text">Need help with your loan?</span>
+        <button type="button" id="lpChatbotTeaserClose" class="lp-chatbot-teaser-close" aria-label="Dismiss help prompt">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Floating Circular Robot Launcher Trigger Button -->
+    <button type="button" id="lpChatbotTrigger" class="lp-chatbot-trigger" aria-label="Open LoanPulse Assistant" aria-expanded="false" aria-controls="lpChatbotPanel">
+        <!-- Friendly Fintech Robot SVG Icon -->
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="8" width="18" height="12" rx="4"></rect>
+            <circle cx="9" cy="13" r="1.5" fill="currentColor"></circle>
+            <circle cx="15" cy="13" r="1.5" fill="currentColor"></circle>
+            <path d="M10 17h4"></path>
+            <line x1="12" y1="4" x2="12" y2="8"></line>
+            <circle cx="12" cy="3" r="1" fill="currentColor"></circle>
+            <path d="M2 13h1"></path>
+            <path d="M21 13h1"></path>
+        </svg>
+    </button>
+
+    <!-- Support Conversation Panel (Strictly hidden by default; opens above launcher on click) -->
+    <aside id="lpChatbotPanel" class="lp-chatbot-panel" role="dialog" aria-label="LoanPulse Customer Support Assistant" aria-modal="false" style="display: none;" hidden>
+        <!-- Header -->
+        <header class="lp-chatbot-header">
+            <div class="lp-chatbot-brand">
+                <div class="lp-chatbot-avatar" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="8" width="18" height="12" rx="4"></rect>
+                        <circle cx="9" cy="13" r="1" fill="currentColor"></circle>
+                        <circle cx="15" cy="13" r="1" fill="currentColor"></circle>
+                        <path d="M10 17h4"></path>
+                        <line x1="12" y1="4" x2="12" y2="8"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="lp-chatbot-title">LoanPulse Assistant</h2>
+                    <div class="lp-chatbot-status-row">
+                        <span class="lp-chatbot-dot" aria-hidden="true"></span>
+                        <span class="lp-chatbot-subtitle">Here to help with your loan</span>
+                    </div>
+                </div>
+            </div>
+            <div class="lp-chatbot-controls">
+                <button type="button" id="lpChatbotMinimize" class="lp-chatbot-btn-ctrl" aria-label="Minimize Assistant" title="Minimize">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <button type="button" id="lpChatbotClose" class="lp-chatbot-btn-ctrl" aria-label="Close Assistant" title="Close">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Messages Stream -->
+        <div id="lpChatbotMessages" class="lp-chatbot-messages" role="log" aria-live="polite">
+            <!-- Initial Assistant Welcome Message -->
+            <div class="lp-chat-msg assistant">
+                Hello! I am your LoanPulse Assistant. How can I help you today?
+                You can ask questions about our 6-rule eligibility assessment, required KYC documents, application stages, processing time, or EMI calculations.
+            </div>
+
+            <!-- Starter Quick Question Chips -->
+            <div class="lp-chatbot-chips">
+                <button type="button" class="lp-chip-btn" data-question="What documents are required for KYC?">What documents are required for KYC?</button>
+                <button type="button" class="lp-chip-btn" data-question="How many days does it take to get the money?">How many days does it take to get the money?</button>
+                <button type="button" class="lp-chip-btn" data-question="How does the 6-rule eligibility assessment work?">How does eligibility assessment work?</button>
+                <button type="button" class="lp-chip-btn" data-question="How do I check my application status?">How do I check my application status?</button>
+                <button type="button" class="lp-chip-btn" data-question="How is my loan EMI calculated?">How is loan EMI calculated?</button>
+                <button type="button" class="lp-chip-btn" data-question="What happens after manager approval?">What happens after manager approval?</button>
+            </div>
+
+            <!-- Live Typing Loading Indicator (3-dot animated sequence) -->
+            <div id="lpChatbotTyping" class="lp-chatbot-typing" role="status" aria-live="polite" aria-label="LoanPulse Assistant is typing" aria-hidden="true" style="display: none;">
+                <span class="lp-typing-dot" aria-hidden="true"></span>
+                <span class="lp-typing-dot" aria-hidden="true"></span>
+                <span class="lp-typing-dot" aria-hidden="true"></span>
+                <span class="sr-only">LoanPulse Assistant is typing...</span>
+            </div>
+        </div>
+
+        <!-- Footer Input Form (Message Composer) -->
+        <footer class="lp-chatbot-footer">
+            <form id="lpChatbotForm" class="lp-chatbot-form">
+                <input
+                    type="text"
+                    id="lpChatbotInput"
+                    class="lp-chat-input"
+                    placeholder="Ask a question about your loan..."
+                    maxlength="500"
+                    aria-label="Your message to LoanPulse Assistant"
+                    autocomplete="off"
+                    required
+                >
+                <button type="submit" id="lpChatbotSend" class="lp-chat-send" aria-label="Send message">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </form>
+            <div class="lp-chatbot-footer-sub">
+                <span>Support: support@loanpulse.local</span>
+                <span id="lpChatbotCharCount">0/500</span>
+            </div>
+        </footer>
+    </aside>
+</div>
+
+<!-- Chatbot Client Script -->
+<script src="{{ url_for('static', filename='js/chatbot.js', v='2.1') }}" defer></script>

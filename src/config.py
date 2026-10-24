@@ -39,6 +39,10 @@ class Config:
     BEHIND_PROXY = os.getenv("BEHIND_PROXY", "False").lower() in ("true", "1")
     PERMANENT_SESSION_LIFETIME = int(os.getenv("SESSION_LIFETIME_SECONDS", "86400"))
 
+    # Customer support assistant AI settings
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
 
 class DevelopmentConfig(Config):
     """Development configuration."""
@@ -63,6 +67,10 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "True").lower() in ("true", "1")
     BEHIND_PROXY = os.getenv("BEHIND_PROXY", "True").lower() in ("true", "1")
     PERMANENT_SESSION_LIFETIME = int(os.getenv("SESSION_LIFETIME_SECONDS", "86400"))
+
+    # Customer support assistant AI settings
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
 config_by_name = {

@@ -7,12 +7,12 @@
     <div class="head">
         <div>
             <h1>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <span>KYC & Document Vault</span>
             </h1>
             <div class="muted">Upload and manage verification credentials required for loan policy underwriting.</div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button type="button" onclick="refreshCurrentPage(this)" class="btn" style="padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh KYC status & documents">
                 <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -27,46 +27,46 @@
     </div>
 
     <!-- KYC Status Overview Hero -->
-    <div class="box" style="margin-bottom: 24px; padding: 22px 26px; border-left: 4px solid {% if kyc_status == 'VERIFIED' %}#10b981{% elif kyc_status == 'REJECTED' %}#ef4444{% elif kyc_status == 'PENDING' %}#f59e0b{% else %}#3b82f6{% endif %}; background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted);">Current Verification Status</span>
+    <div class="kyc-banner {% if kyc_status == 'VERIFIED' %}kyc-verified{% elif kyc_status == 'REJECTED' %}kyc-rejected{% elif kyc_status == 'PENDING' %}kyc-pending{% else %}kyc-not-started{% endif %}">
+        <div class="kyc-banner-inner">
+            <div class="kyc-banner-content">
+                <div class="kyc-banner-eyebrow">
+                    <span class="label">Current Verification Status</span>
                     {% if kyc_status == 'VERIFIED' %}
-                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.4); font-weight: 700;">
                             ✓ VERIFIED
                         </span>
                     {% elif kyc_status == 'PENDING' %}
-                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: rgba(245, 158, 11, 0.4); font-weight: 700;">
                             ⏳ PENDING OFFICER REVIEW
                         </span>
                     {% elif kyc_status == 'REJECTED' %}
-                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #dc2626; border-color: rgba(239, 68, 68, 0.4); font-weight: 700;">
                             ✕ REJECTED
                         </span>
                     {% else %}
-                        <span class="tag" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border-color: rgba(59, 130, 246, 0.4); font-weight: 700;">
+                        <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.35); font-weight: 700;">
                             NOT STARTED
                         </span>
                     {% endif %}
                 </div>
 
                 {% if kyc_status == 'VERIFIED' %}
-                    <h2 style="margin: 0 0 6px; font-size: 18px; color: #ffffff;">KYC Successfully Verified</h2>
-                    <p class="muted" style="margin: 0; font-size: 13.5px;">Your identity and verification documents have been vetted and approved. You are qualified for expedited loan decisions.</p>
+                    <h2 class="kyc-banner-title" style="font-size: 18px;">KYC Successfully Verified</h2>
+                    <p class="kyc-banner-desc">Your identity and verification documents have been vetted and approved. You are qualified for expedited loan decisions.</p>
                 {% elif kyc_status == 'PENDING' %}
-                    <h2 style="margin: 0 0 6px; font-size: 18px; color: #ffffff;">Documents Under Officer Review</h2>
-                    <p class="muted" style="margin: 0; font-size: 13.5px;">Your files have been submitted and are in the review queue. A loan officer will review and update your status.</p>
+                    <h2 class="kyc-banner-title" style="font-size: 18px;">Documents Under Officer Review</h2>
+                    <p class="kyc-banner-desc">Your files have been submitted and are in the review queue. A loan officer will review and update your status.</p>
                 {% elif kyc_status == 'REJECTED' %}
-                    <h2 style="margin: 0 0 6px; font-size: 18px; color: #f87171;">KYC Verification Rejected</h2>
-                    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 12px 16px; margin-top: 10px; max-width: 600px;">
-                        <b style="color: #fca5a5; font-size: 13px;">Reason from Loan Officer:</b>
-                        <div style="color: #f87171; font-size: 13px; margin-top: 4px;">{{ current_user.kyc_rejection_reason or "Document quality or verification criteria was not satisfied." }}</div>
+                    <h2 class="kyc-banner-title" style="font-size: 18px;">KYC Verification Rejected</h2>
+                    <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-sm); padding: 12px 16px; margin-top: 10px; max-width: 600px;">
+                        <b style="color: #dc2626; font-size: 13px;">Reason from Loan Officer:</b>
+                        <div style="color: var(--text-primary); font-size: 13px; margin-top: 4px;">{{ current_user.kyc_rejection_reason or "Document quality or verification criteria was not satisfied." }}</div>
                     </div>
                     <p class="muted" style="margin-top: 10px; font-size: 13px;">Please replace the rejected files below and click <b>Resubmit KYC for Review</b>.</p>
                 {% else %}
-                    <h2 style="margin: 0 0 6px; font-size: 18px; color: #ffffff;">KYC Not Started</h2>
-                    <p class="muted" style="margin: 0; font-size: 13.5px;">Upload proof of identity, address, or income below. Once uploaded, submit them for loan officer verification.</p>
+                    <h2 class="kyc-banner-title" style="font-size: 18px;">KYC Not Started</h2>
+                    <p class="kyc-banner-desc">Upload proof of identity, address, or income below. Once uploaded, submit them for loan officer verification.</p>
                 {% endif %}
             </div>
 
@@ -83,29 +83,29 @@
     </div>
 
     <!-- Upload New Documents Section -->
-    <div class="box" style="padding: 26px; margin-bottom: 24px;">
-        <h2 style="margin: 0 0 4px; font-size: 17px;">Upload Verification Documents</h2>
+    <div class="box" style="padding: 24px; margin-bottom: var(--space-6);">
+        <h2 style="margin: 0 0 4px; font-size: 17px; color: var(--text-primary);">Upload Verification Documents</h2>
         <p class="muted" style="margin-bottom: 22px; font-size: 13px;">Supported file formats: <b>PDF, PNG, JPG, JPEG</b>. Maximum file size: <b>5 MB</b> per file.</p>
 
-        <div class="grid3" style="gap: 18px;">
+        <div class="document-upload-grid">
             {% for code, label in document_types.items() %}
-                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="document-upload-card">
                     <div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                            <span style="font-weight: 700; font-size: 13px; color: #ffffff;">
+                        <div class="document-upload-head">
+                            <span class="document-upload-title">
                                 {% if code == 'IDENTITY_PROOF' %}Identity Proof{% elif code == 'ADDRESS_PROOF' %}Address Proof{% else %}Income Proof{% endif %}
                             </span>
                         </div>
-                        <p class="muted" style="font-size: 11.5px; margin-bottom: 14px; min-height: 32px;">{{ label }}</p>
+                        <p class="document-upload-desc">{{ label }}</p>
                     </div>
 
                     <form method="POST" action="{{ url_for('customer.upload_document') }}" enctype="multipart/form-data">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="document_type" value="{{ code }}">
                         <div style="margin-bottom: 12px;">
-                            <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg" required style="font-size: 12px; padding: 6px;">
+                            <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg" required style="font-size: 12px; padding: 7px 10px; width: 100%;">
                         </div>
-                        <button type="submit" class="btn primary" style="width: 100%; padding: 7px 12px; font-size: 12px; justify-content: center;">
+                        <button type="submit" class="btn primary" style="width: 100%; padding: 8px 12px; font-size: 12px; justify-content: center;">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             <span>Upload Document</span>
                         </button>
@@ -119,11 +119,11 @@
     <div class="box" style="padding: 0; overflow: hidden;">
         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
             <div>
-                <h2 style="margin: 0; font-size: 16px;">Uploaded Documents Vault</h2>
+                <h2 style="margin: 0; font-size: 16px; color: var(--text-primary);">Uploaded Documents Vault</h2>
                 <span class="muted" style="font-size: 12px;">Active customer credential records stored in isolated encrypted storage</span>
             </div>
             {% if documents %}
-                <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3);">
+                <span class="tag" style="background: rgba(59, 130, 246, 0.12); color: var(--primary); border-color: rgba(59, 130, 246, 0.3);">
                     {{ documents|length }} Files
                 </span>
             {% endif %}
@@ -146,7 +146,7 @@
                         {% for doc in documents %}
                             <tr>
                                 <td>
-                                    <span style="font-weight: 600; font-size: 13px; color: #ffffff;">
+                                    <span style="font-weight: 600; font-size: 13px; color: var(--text-primary);">
                                         {% if doc.document_type == 'IDENTITY_PROOF' %}Identity Proof{% elif doc.document_type == 'ADDRESS_PROOF' %}Address Proof{% else %}Income Proof{% endif %}
                                     </span>
                                 </td>
@@ -165,11 +165,11 @@
                                 <td class="muted" style="font-size: 12px;">{{ doc.uploaded_at }}</td>
                                 <td>
                                     {% if doc.verification_status == 'VERIFIED' %}
-                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">VERIFIED</span>
+                                        <span class="tag" style="background: rgba(16, 185, 129, 0.15); color: #059669; border-color: rgba(16, 185, 129, 0.4); font-weight: 700; font-size: 11px;">VERIFIED</span>
                                     {% elif doc.verification_status == 'REJECTED' %}
-                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">REJECTED</span>
+                                        <span class="tag" style="background: rgba(239, 68, 68, 0.15); color: #dc2626; border-color: rgba(239, 68, 68, 0.4); font-weight: 700; font-size: 11px;">REJECTED</span>
                                     {% else %}
-                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">PENDING</span>
+                                        <span class="tag" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border-color: rgba(245, 158, 11, 0.4); font-weight: 700; font-size: 11px;">PENDING</span>
                                     {% endif %}
                                 </td>
                                 <td style="text-align: right;">
@@ -181,7 +181,7 @@
                                         {% if doc.verification_status != 'VERIFIED' %}
                                             <form method="POST" action="{{ url_for('customer.delete_document', document_id=doc.document_id) }}" style="display: inline;" onsubmit="return confirm('Delete this document?');">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                                <button type="submit" class="btn" style="padding: 4px 8px; font-size: 11.5px; color: #f87171;">
+                                                <button type="submit" class="btn" style="padding: 4px 8px; font-size: 11.5px; color: var(--danger);" title="Delete file">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                                 </button>
                                             </form>
@@ -194,12 +194,12 @@
                 </table>
             </div>
         {% else %}
-            <div class="placeholder" style="padding: 44px 20px;">
-                <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: #60a5fa; margin-bottom: 14px;">
+            <div class="placeholder empty-state" style="padding: 44px 20px;">
+                <div class="empty-state-icon" style="width: 44px; height: 44px; border-radius: 50%; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; color: var(--primary); margin: 0 auto 14px;">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 </div>
-                <h3 style="margin: 0 0 6px; font-size: 16px; color: #ffffff;">No documents uploaded</h3>
-                <p class="muted" style="max-width: 400px; margin: 0; font-size: 13px;">Choose a document type above and upload files to initiate KYC verification.</p>
+                <h3 class="empty-state-title" style="margin: 0 0 6px; font-size: 16px; color: var(--text-primary);">No documents uploaded</h3>
+                <p class="muted empty-state-description" style="max-width: 400px; margin: 0 auto; font-size: 13px;">Choose a document type above and upload files to initiate KYC verification.</p>
             </div>
         {% endif %}
     </div>
